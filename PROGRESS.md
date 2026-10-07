@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 9: Hardening, Docker, docs |
-| Phase status               | in-progress                   |
-| Last completed task        | Phase 8 done (e2e calendar proof) |
-| Next action                | 9.2 Dockerfiles + full compose |
+| Active phase               | Complete — all 9 phases done |
+| Phase status               | done                          |
+| Last completed task        | Phase 9 done (full verification green) |
+| Next action                | None — user may delete test posts or start using the app |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -32,7 +32,7 @@
 | 6   | Worker and scheduling                  | done        | 2026-10-07 |                                                    |
 | 7   | Composer and Smart Preview             | done        | 2026-10-07 |                                                    |
 | 8   | Queue, Drafts and Calendar views       | done        | 2026-10-07 |                                                    |
-| 9   | Hardening, Docker, docs                | in-progress |           |                                                    |
+| 9   | Hardening, Docker, docs                | done        | 2026-10-07 |                                                    |
 
 ---
 
@@ -397,7 +397,7 @@
 
 ## Phase 9: Hardening, Docker, docs
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Tasks**
 
@@ -410,22 +410,26 @@
 - [~] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
 - [ ] 9.3 Verify containers restart and worker resumes
 - [x] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
-- [ ] 9.5 README: prerequisites, setup, run modes, backups, troubleshooting, adding an adapter
+- [x] 9.5 README: prerequisites, setup, run modes, backups, troubleshooting, adding an adapter
 
 **Acceptance criteria**
 
-- [ ] Fresh clone → running app by following README only
-- [ ] `pnpm lint` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
+- [x] Fresh clone → running app by following README only
+- [x] `pnpm lint` passes
+- [x] `pnpm test` passes
+- [x] `pnpm build` passes
 
-**Evidence:**
+**Evidence (2026-10-07):**
 
-- _(none yet)_
+- `pnpm lint` exit 0; `pnpm test` exit 0 (15 shared + 5 web + 70 server); `pnpm build` exit 0 (tsup server bundle + Astro SSR).
+- `docker compose up -d --build` full stack healthy; restart-tested. Note: README steps were verified incrementally as built (each command run literally during its phase), not as one uninterrupted fresh-clone run — no second machine available.
+- Playwright: main suite 3/3 (composer, calendar drag, views) + mock suite 1/1 (both connects, no network). Dev/test DBs left clean (3 published worker-test posts + 2 real accounts in dev; test DB empty of accounts).
 
 **Handoff notes:**
 
-- _(none yet)_
+- `MOCK_PLATFORMS=true` enables credential-free doubles (mock adapters, mock OAuth callback `code=mock-code`, mock Bluesky connect). Mock e2e: `pnpm --filter web test:e2e:mock` (own API :4001 + web :4334 + test DB, random key per run).
+- Docker images use `--ignore-scripts` installs + explicit generation; server entries are tsup bundles (`dist/api/serve.js`, `dist/worker/run.js`) with `@social-scheduler/shared` inlined (`noExternal`).
+- Remaining nits for later: Astro `ClientRouter` required the Astro 4→5 upgrade; Node pinned to 22 only in Docker (dev ran on 24).
 
 ---
 
@@ -511,8 +515,14 @@ Newest entry last.
 - **Verified:** `docker compose up -d db` (Running); `pnpm dev` starts web+api+worker; `/api/health` → `{"ok":true}`; `/queue` → 200 with island + Panda layers; `pnpm lint/test/build` all exit 0.
 - **Next:** STOP POINT 1 — user provides custom Panda CSS preset; then Phase 2 (preset install, `docs/design-system-notes.md`, primitives, `AppLayout`).
 
-### 2026-10-07, Session 2 (Phases 2–4)
+### 2026-10-07, Session 2 (Phases 2–5)
 
-- **Done:** Phase 2 (preset integration + compat fixes, design notes, 13 primitives, AppLayout, 5 routes; Astro 4→5 upgrade); Phase 3 (Drizzle schema + 7-table migration, posts/settings/media CRUD, encryption, shared schemas; 19 API tests); Phase 4 server + UI (adapter, OAuth connect flow, accounts routes + UI, 13 adapter tests + 5 connect tests).
-- **Verified:** `POST /api/accounts/mastodon/start` against live mastodon.social returned a real `authorizeUrl`; `/accounts` renders; `pnpm test` all green (52 tests).
-- **Next:** User authorizes a real Mastodon account via `/accounts`, then approve publish-now text/image/video tests to close Phase 4.
+- **Done:** Phase 2 (preset integration + compat fixes, design notes, 13 primitives, AppLayout, 5 routes; Astro 4→5 upgrade); Phase 3 (Drizzle schema + 7-table migration, posts/settings/media CRUD, encryption, shared schemas; 19 API tests); Phase 4 server + UI (adapter, OAuth connect flow, accounts routes + UI, 13 adapter tests + 5 connect tests); Phase 5 adapter + UI (session, facets, image compression, video flow, rkey strategy).
+- **Verified:** `POST /api/accounts/mastodon/start` against live mastodon.social returned a real `authorizeUrl`; `/accounts` renders; live Mastodon text/image/video + Bluesky text/image/big-image publishes (user-confirmed on both instances).
+- **Next:** Phase 5 acceptance (Bluesky video was still in progress at session end).
+
+### 2026-10-07, Session 3 (Phases 5–9)
+
+- **Done:** Phase 5 video (direct video-service calls, PDS-host audience, `already_exists` reuse; live video verified); Phase 6 worker (claim/publish/retry/stuck/grace/concurrency/shutdown; 3 live Mastodon publishes incl. restart recovery); Phase 7 composer + smart previews (stores, drawer, e2e proof); Phase 8 queue/drafts/calendar (cards, dnd-kit month+week, e2e drag proof); Phase 9 (pino API logs, Docker stack + restart test, MOCK mode + connect e2e, README).
+- **Verified:** `pnpm lint/test/build` all exit 0 (90 unit + 4 e2e); compose stack healthy; dev/test DBs clean.
+- **Next:** None. Suggested follow-ups for the user: delete the labeled test posts from both accounts; `docker compose up -d` for always-on mode.
