@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@atproto/api": "^0.24.0",
+    "@atproto/common-web": "^0.5.14",
     "@hono/node-server": "^1.13.2",
     "@social-scheduler/shared": "workspace:^",
     "dotenv": "^16.4.5",

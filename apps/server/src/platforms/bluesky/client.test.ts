@@ -165,11 +165,16 @@ describe('prepareImage', () => {
 })
 
 describe('uploadVideo', () => {
-  function stubVideoService(scenario: 'ready' | 'poll-then-ready'): void {
+  function stubVideoService(scenario: 'ready' | 'poll-then-ready' | 'disallowed'): void {
     let polls = 0
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) => {
+        if (String(url).includes('getUploadLimits')) {
+          return scenario === 'disallowed'
+            ? new Response(JSON.stringify({ canUpload: false, message: 'daily limit reached' }))
+            : new Response(JSON.stringify({ canUpload: true }))
+        }
         if (String(url).includes('uploadVideo')) {
           return new Response(
             JSON.stringify({ jobStatus: { jobId: 'job1', did: 'did:plc:test', state: 'JOB_STATE_CREATED' } }),
@@ -208,11 +213,12 @@ describe('uploadVideo', () => {
   })
 
   it('refuses when the service disallows uploads', async () => {
-    mockState.uploadLimits = { canUpload: false, message: 'daily limit reached' }
+    stubVideoService('disallowed')
     const agent = await connect({ handle: 'alice.test', appPassword: 'x' })
     await expect(
       uploadVideo(agent, { buffer: new Uint8Array([1]), mime: 'video/mp4', filename: 'v.mp4' }),
     ).rejects.toMatchObject({ kind: 'permanent' })
+    vi.unstubAllGlobals()
   })
 })
 

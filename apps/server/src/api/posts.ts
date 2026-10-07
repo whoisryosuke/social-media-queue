@@ -48,6 +48,7 @@ function toTargetDto(target: typeof postTargets.$inferSelect): PostTarget {
     postId: target.postId,
     accountId: target.accountId,
     bodyOverride: target.bodyOverride,
+    rkey: target.rkey,
     status: target.status,
     attempts: target.attempts,
     nextAttemptAt: target.nextAttemptAt,

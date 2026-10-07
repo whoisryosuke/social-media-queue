@@ -77,6 +77,7 @@ export const postTargets = pgTable(
       .notNull()
       .references(() => accounts.id, { onDelete: 'cascade' }),
     bodyOverride: text('body_override'),
+    rkey: text('rkey'),
     status: targetStatusEnum('status').notNull().default('pending'),
     attempts: integer('attempts').notNull().default(0),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true, mode: 'date' }),

@@ -35,6 +35,9 @@ importers:
       '@atproto/api':
         specifier: ^0.24.0
         version: 0.24.0
+      '@atproto/common-web':
+        specifier: ^0.5.14
+        version: 0.5.14
       '@hono/node-server':
         specifier: ^1.13.2
         version: 1.19.17(hono@4.13.13)

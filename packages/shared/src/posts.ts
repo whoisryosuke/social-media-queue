@@ -9,6 +9,7 @@ export const postTargetSchema = z.object({
   postId: z.string().uuid(),
   accountId: z.string().uuid(),
   bodyOverride: z.string().nullable(),
+  rkey: z.string().nullable(),
   status: targetStatusSchema,
   attempts: z.number().int().min(0),
   nextAttemptAt: isoDate.nullable(),

@@ -1,4 +1,5 @@
 import { BskyAgent, RichText } from '@atproto/api'
+import { TID } from '@atproto/common-web'
 import { BLUESKY_LIMITS, blueskyLength, type PlatformLimits } from '@social-scheduler/shared'
 import sharp from 'sharp'
 import { PlatformError, type PublishContent } from '../types.js'
@@ -21,6 +22,11 @@ export function normalizeHandle(input: string): string {
     throw new PlatformError(`Not a valid Bluesky handle: ${input}`, 'permanent')
   }
   return handle
+}
+
+/** Generates a fresh record key (TID). `app.bsky.feed.post` only accepts TIDs. */
+export function nextRkey(): string {
+  return TID.nextStr()
 }
 
 function toPlatformError(error: unknown, context: string): PlatformError {
@@ -165,8 +171,47 @@ interface VideoJobStatus {
   }
 }
 
+/** Mints a service-auth token for one video-service method call. */
+async function videoServiceToken(agent: BskyAgent, lxm: string): Promise<string> {
+  try {
+    const response = await agent.com.atproto.server.getServiceAuth({
+      aud: 'did:web:video.bsky.app',
+      lxm,
+      exp: Math.floor(Date.now() / 1000) + 60 * 30,
+    })
+    return (response.data as { token: string }).token
+  } catch (error) {
+    throw toPlatformError(error, 'Bluesky video service auth failed')
+  }
+}
+
 function videoErrorMessage(data: { error?: string; message?: string }): string {
   return data.message ?? data.error ?? 'Video processing failed'
+}
+
+async function videoServiceGet<T>(path: string, token: string): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(`${VIDEO_SERVICE_URL}${path}`, {
+      headers: { authorization: `Bearer ${token}` },
+    })
+  } catch (error) {
+    throw toPlatformError(error, 'Bluesky video service request failed')
+  }
+  if (!response.ok) {
+    const failure = (await response.json().catch(() => null)) as {
+      blob?: BlobRef
+      error?: string
+      message?: string
+    } | null
+    // `already_exists`: the video was processed before — reuse its blob.
+    if (failure?.blob !== undefined) return failure as T
+    throw toPlatformError(
+      { status: response.status, message: videoErrorMessage(failure ?? {}) },
+      'Bluesky video service request failed',
+    )
+  }
+  return (await response.json()) as T
 }
 
 export async function uploadVideo(
@@ -177,10 +222,16 @@ export async function uploadVideo(
   const interval = options.pollIntervalMs ?? VIDEO_POLL_INTERVAL_MS
   const timeout = options.timeoutMs ?? VIDEO_POLL_TIMEOUT_MS
 
+  // NOTE: the PDS does not implement these methods (501), so everything goes
+  // straight to the video service with per-method service-auth tokens
+  // (aud `did:web:video.bsky.app`, lxm = the method NSID).
   let limits: { canUpload: boolean; message?: string }
   try {
-    const response = await agent.app.bsky.video.getUploadLimits()
-    limits = response.data as { canUpload: boolean; message?: string }
+    const token = await videoServiceToken(agent, 'app.bsky.video.getUploadLimits')
+    limits = await videoServiceGet<{ canUpload: boolean; message?: string }>(
+      '/xrpc/app.bsky.video.getUploadLimits',
+      token,
+    )
   } catch (error) {
     throw toPlatformError(error, 'Bluesky video limits check failed')
   }
@@ -188,21 +239,9 @@ export async function uploadVideo(
     throw new PlatformError(`Video upload not allowed: ${limits.message ?? 'unknown reason'}`, 'permanent')
   }
 
-  const pdsHost = new URL(agent.service.toString()).hostname
-  let serviceToken: string
-  try {
-    const response = await agent.com.atproto.server.getServiceAuth({
-      aud: `did:web:${pdsHost}`,
-      lxm: 'com.atproto.repo.uploadBlob',
-      exp: Math.floor(Date.now() / 1000) + 60 * 30,
-    })
-    serviceToken = (response.data as { token: string }).token
-  } catch (error) {
-    throw toPlatformError(error, 'Bluesky video service auth failed')
-  }
-
   const did = agent.session?.did
   if (did === undefined) throw new PlatformError('Bluesky session expired', 'auth')
+  const uploadToken = await videoServiceToken(agent, 'app.bsky.video.uploadVideo')
   const uploadUrl = new URL(`${VIDEO_SERVICE_URL}/xrpc/app.bsky.video.uploadVideo`)
   uploadUrl.searchParams.set('did', did)
   uploadUrl.searchParams.set('name', item.filename)
@@ -210,7 +249,7 @@ export async function uploadVideo(
   try {
     const response = await fetch(uploadUrl, {
       method: 'POST',
-      headers: { authorization: `Bearer ${serviceToken}`, 'content-type': item.mime },
+      headers: { authorization: `Bearer ${uploadToken}`, 'content-type': item.mime },
       body: item.buffer as BodyInit,
     })
     if (!response.ok) throw new Error(`upload failed: ${response.status}`)
@@ -220,25 +259,18 @@ export async function uploadVideo(
   }
   if (job.blob !== undefined) return { blob: job.blob }
 
+  const statusToken = await videoServiceToken(agent, 'app.bsky.video.getJobStatus')
   const deadline = Date.now() + timeout
   while (Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, interval))
     let status: VideoJobStatus['jobStatus']
     try {
-      const response = await fetch(
-        `${VIDEO_SERVICE_URL}/xrpc/app.bsky.video.getJobStatus?jobId=${encodeURIComponent(job.jobId)}`,
-      )
-      if (!response.ok) {
-        const failure = (await response.json().catch(() => null)) as {
-          blob?: BlobRef
-          error?: string
-          message?: string
-        } | null
-        // `already_exists`: the video was processed before — reuse its blob.
-        if (failure?.blob !== undefined) return { blob: failure.blob }
-        throw new Error(videoErrorMessage(failure ?? {}))
-      }
-      status = ((await response.json()) as VideoJobStatus).jobStatus
+      status = (
+        await videoServiceGet<VideoJobStatus>(
+          `/xrpc/app.bsky.video.getJobStatus?jobId=${encodeURIComponent(job.jobId)}`,
+          statusToken,
+        )
+      ).jobStatus
     } catch (error) {
       throw toPlatformError(error, 'Bluesky video job polling failed')
     }

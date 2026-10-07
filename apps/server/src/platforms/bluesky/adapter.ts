@@ -56,12 +56,17 @@ export class BlueskyAdapter implements PlatformAdapter {
     return validateContent(content, limits)
   }
 
+  /**
+   * Publishes via `putRecord`. `ctx.idempotencyKey` MUST be a TID
+   * (generate once per target with `nextRkey()` and reuse across retries —
+   * the worker stores it on the target row). Retries overwrite instead of
+   * duplicating.
+   */
   async publish(
     account: ResolvedAccount,
     content: PublishContent,
     ctx: { idempotencyKey: string },
-  ): Promise<{ remoteId: string; url: string }> {
-    const agent = await connect(decodeCredentials(account.credentials))
+  ): Promise<{ remoteId: string; url: string }> {    const agent = await connect(decodeCredentials(account.credentials))
     const richText = await detectFacets(agent, content.text)
 
     const images = content.media.filter((item) => item.mime.startsWith('image/'))
