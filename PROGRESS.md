@@ -209,14 +209,16 @@
 
 **Acceptance criteria**
 
-- [ ] User can connect a Mastodon account
-- [ ] `publish-now` of a text post works on a real instance
-- [ ] `publish-now` of an image post works
-- [ ] `publish-now` of a video post works
+- [x] User can connect a Mastodon account
+- [x] `publish-now` of a text post works on a real instance
+- [x] `publish-now` of an image post works
+- [x] `publish-now` of a video post works
 
 **Evidence:**
 
-- _(none yet)_
+- Account `@aries710@mastodon.social` connected via OAuth (active, limits fetched: 500 chars / 4 media / 16MB img / ~99MB video), 2026-10-07
+- Live publishes through `MastodonAdapter.publish` (temp script, deleted after): text → https://mastodon.social/@aries710/117401717024185097, image (png + alt text) → https://mastodon.social/@aries710/117401717301996173, video (mp4, async 202 → poll → ready) → https://mastodon.social/@aries710/117401717859852227, 2026-10-07. (Direct adapter calls — worker pickup of `publish-now` targets arrives in Phase 6.)
+- `pnpm --filter server test` → 39 pass; `pnpm lint` exit 0, 2026-10-07
 
 **Handoff notes:**
 
