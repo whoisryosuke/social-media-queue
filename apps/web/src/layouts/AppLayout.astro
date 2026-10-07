@@ -1,0 +1,93 @@
+---
+import { ClientRouter } from 'astro:transitions'
+import '../index.css'
+import { css } from '../../styled-system/css'
+import NewPostButton from '../components/NewPostButton'
+import ToastRegion from '../components/ui/Toast'
+
+export type PrimaryTab = 'queue' | 'calendar' | 'drafts'
+
+interface Props {
+  title: string
+  activeTab?: PrimaryTab
+}
+
+const { title, activeTab } = Astro.props
+
+const tabs: { value: PrimaryTab; label: string; href: string }[] = [
+  { value: 'queue', label: 'Queue', href: '/queue' },
+  { value: 'calendar', label: 'Calendar', href: '/calendar' },
+  { value: 'drafts', label: 'Drafts', href: '/drafts' },
+]
+
+const page = css({
+  minHeight: '100vh',
+  background: 'gray.2',
+  color: 'gray.12',
+  fontFamily: 'body',
+})
+
+const header = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '4',
+  px: '4',
+  py: '3',
+  background: 'gray.1',
+  borderBottomWidth: '1px',
+  borderBottomStyle: 'solid',
+  borderBottomColor: 'gray.6',
+})
+
+const brand = css({ fontSize: '5', fontWeight: 'bold' })
+
+const nav = css({ display: 'flex', gap: '1', background: 'gray.1', px: '4' })
+
+const tabLink = (active: boolean) =>
+  css({
+    px: '3',
+    py: '2',
+    fontSize: '3',
+    fontWeight: 'medium',
+    color: active ? 'gray.12' : 'gray.10',
+    borderBottomWidth: '2px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: active ? 'gray.12' : 'transparent',
+    textDecoration: 'none',
+    _hover: { color: 'gray.12' },
+  })
+
+const main = css({ px: '4', py: '4', maxWidth: '8xl', marginInline: 'auto' })
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Social Scheduler</title>
+    <ClientRouter />
+  </head>
+  <body class={page}>
+    <header class={header}>
+      <span class={brand}>Social Scheduler</span>
+      <NewPostButton client:only="react" transition:persist="new-post" />
+    </header>
+    <nav aria-label="Primary" class={nav}>
+      {
+        tabs.map((tab) => (
+          <a
+            href={tab.href}
+            aria-current={tab.value === activeTab ? 'page' : undefined}
+            class={tabLink(tab.value === activeTab)}
+          >
+            {tab.label}
+          </a>
+        ))
+      }
+    </nav>
+    <main class={main}>
+      <slot />
+    </main>
+    <ToastRegion client:only="react" transition:persist="toasts" />
+  </body>
+</html>

@@ -1,0 +1,11 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import EmptyState from '../components/ui/EmptyState'
+---
+<AppLayout title="Accounts">
+  <h1>Accounts</h1>
+  <EmptyState
+    title="No accounts connected"
+    description="Mastodon OAuth (Phase 4) and Bluesky app-password (Phase 5) connection flows will live here."
+  />
+</AppLayout>

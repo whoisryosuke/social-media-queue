@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 2: Design system integration |
+| Active phase               | Phase 3: Database, shared schemas, API skeleton |
 | Phase status               | in-progress                   |
-| Last completed task        | 2.1 Panda preset integrated + regenerated |
-| Next action                | 2.2 Write docs/design-system-notes.md |
+| Last completed task        | 2.5 Placeholder routes |
+| Next action                | 3.1 Drizzle schema + migrations |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -25,8 +25,8 @@
 | #   | Phase                                  | Status      | Completed | Stop point after/before                            |
 | --- | -------------------------------------- | ----------- | --------- | -------------------------------------------------- |
 | 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
-| 2   | Design system integration              | in-progress |           |                                                    |
-| 3   | Database, shared schemas, API skeleton | not-started |           |                                                    |
+| 2   | Design system integration              | done        | 2026-10-07 |                                                    |
+| 3   | Database, shared schemas, API skeleton | in-progress |           |                                                    |
 | 4   | Mastodon integration                   | not-started |           | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | not-started |           | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | not-started |           |                                                    |
@@ -81,15 +81,37 @@
 
 ## Phase 2: Design system integration
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Tasks**
 
 - [x] 2.1 Add user's Panda preset to `panda.config.ts`, regenerate `styled-system`
   - Note: preset provided by user at `apps/web/src/theme` ("daw-preset"), wired as `presets: [preset]` (replaces base preset). Compat fixes by agent: `bgLinear` → `bgGradient` (renamed in Panda 0.53) in `button.recipe.ts` + `panel.style.ts`; added explicit `: Preset`/`: Tokens` annotations (TS2742 under pnpm isolation); added `@pandacss/types@0.53.7` dev dep. Verified: `panda codegen` + `tsc` + `eslint` + `astro build` all pass.
 - [x] 2.2 Write `docs/design-system-notes.md` (tokens, semantic tokens, recipes, patterns, conditions)
-- [~] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
-- [ ] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
+- [x] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
+  - Note: headless = Ark UI (`@ark-ui/react`, React 18 compatible). Select is a styled native (accessible by default). Toast = nanostore `$toasts` + `ToastRegion` island (auto-dismiss 5s). `IconButton` requires `label`.
+- [x] 2.4 `AppLayout.astro`: header, tab bar (Queue | Calendar | Drafts), "New post" button, persisted toast region, `<ClientRouter />`
+- [x] 2.5 Placeholder routes: `/queue`, `/calendar`, `/drafts`, `/accounts`, `/settings`
+
+**Acceptance criteria**
+
+- [x] All three tab routes exist with placeholder content
+- [x] Navigation works with view transitions
+- [x] Visuals use only preset tokens (exceptions logged below)
+
+**Evidence:**
+
+- `GET /queue /calendar /drafts /accounts /settings` → all 200 on Astro dev (2026-10-07; served on :4322 because :4321 held by user's blog project)
+- Served HTML contains `ClientRouter` script + `astro-view-transitions-enabled` meta, tab links with `aria-current="page"` on the active tab, and `transition:persist` islands (`new-post`, `toasts`) — verified via `curl.exe`, 2026-10-07. Full client-side transition animation needs a real browser (not available to agent).
+- `pnpm lint` exit 0, `pnpm --filter web build` exit 0 (Astro 5.18.2 SSR), 2026-10-07
+- Token grep over `src/components|layouts|pages`: only raw values are `borderWidth 1px/2px` (preset has no border-width scale; logged as exceptions). No hex colors, no px spacing/typography.
+
+**Handoff notes:**
+
+- Primitives live in `apps/web/src/components/ui/` (+ barrel `index.ts`); Ark UI used for Tabs/Avatar/Dialog parts; Select is a styled native; Toast = `$toasts` nanostore + `ToastRegion` island (auto-dismiss 5s).
+- `Badge`/`Button` take a runtime `colorPalette` prop (works via `staticCss.colorPalette` classes + `colorPalette.N` token refs — do NOT use dynamic template colors, Panda can't extract those).
+- `AppLayout` tab bar is server-rendered Astro (no JS); "New post" button is an island pushing an info toast until the Phase 7 composer exists.
+- Phase-1 `DemoIsland` + `demo.ts` store removed (superseded by AppLayout; pipeline proof recorded in Phase 1 evidence).
 - [ ] 2.4 `AppLayout.astro`: header, tab bar (Queue | Calendar | Drafts), "New post" button, persisted toast region, `<ClientRouter />`
 - [ ] 2.5 Placeholder routes: `/queue`, `/calendar`, `/drafts`, `/accounts`, `/settings`
 
@@ -360,6 +382,9 @@ Append only. Anything that differs from `PLAN.md`, or where this file was correc
 | 2026-10-07 | 1 | Dropped `.npmrc` (`use-node-version=22` rejected by installed pnpm 8.9.2); env runs Node v24.14.0, not PLAN's Node 22 LTS | Avoid blocking Windows dev; revisit Node pinning in Phase 9 Docker work |
 | 2026-10-07 | 1 | `storage/.gitkeep` removed; `storage/` stays fully git-ignored | `!.gitkeep` did not un-ignore inside ignored dir; matches PLAN (storage is runtime data) |
 | 2026-10-07 | 1 | Web dev server verified on :4322 instead of :4321 | Port 4321 was occupied by the user's other project (ryosuke-astro-blog); app is configured for 4321 and takes it on a clean machine |
+| 2026-10-07 | 2 | Upgraded Astro 4.16 → 5.18 (with `@astrojs/node@9`, `@astrojs/react@4`) | PLAN requires `<ClientRouter />`, which does not exist in Astro 4 (there it is `<ViewTransitions />`) |
+| 2026-10-07 | 2 | Added `typescript-eslint` to root devDeps; flat config now parses TS (rules still empty) | Scaffold `eslint` could not parse TS sources at all; real rules deferred to Phase 9 |
+| 2026-10-07 | 2 | Removed Phase-1 `DemoIsland` + `demo.ts` store when `queue.astro` moved to `AppLayout` | Superseded placeholder; keeps tree free of dead code |
 
 ---
 
@@ -388,7 +413,7 @@ Hard-coded values used because the Panda preset has no matching token. Append on
 
 | Date | File | Value | Reason |
 | ---- | ---- | ----- | ------ |
-|      |      |       |        |
+| 2026-10-07 | `apps/web/src/components/ui/*.tsx`, `AppLayout.astro` | `borderWidth: '1px'` / `'2px'` | Preset `borders` token only defines `none`; no border-width scale exists |
 
 ---
 

@@ -1,0 +1,11 @@
+---
+import AppLayout from '../layouts/AppLayout.astro'
+import EmptyState from '../components/ui/EmptyState'
+---
+<AppLayout title="Calendar" activeTab="calendar">
+  <h1>Calendar</h1>
+  <EmptyState
+    title="No posts on the calendar"
+    description="Month and week views with drag-and-drop rescheduling land in Phase 8."
+  />
+</AppLayout>

@@ -1,14 +1,11 @@
 ---
-import '../index.css'
-import DemoIsland from '../components/DemoIsland'
+import AppLayout from '../layouts/AppLayout.astro'
+import EmptyState from '../components/ui/EmptyState'
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Queue — Social Scheduler</title>
-  </head>
-  <body>
-    <h1>Queue (Phase 1 placeholder)</h1>
-    <DemoIsland client:only="react" />
-  </body>
-</html>
+<AppLayout title="Queue" activeTab="queue">
+  <h1>Scheduled posts</h1>
+  <EmptyState
+    title="Nothing scheduled"
+    description="Scheduled posts will appear here in chronological order (Phase 8)."
+  />
+</AppLayout>
