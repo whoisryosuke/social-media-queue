@@ -11,12 +11,11 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 5: Bluesky integration |
-| Phase status               | blocked                   |
-| Last completed task        | 5.7 Accounts page UI |
-| Next action                | User connects Bluesky via /accounts; then live publish tests |
-| Blocker / pending question | Need user's Bluesky handle connected (app password entered by user in UI only) + approval for live test posts |
-| Last updated               | 2026-10-07                |
+| Active phase               | Phase 6: Worker and scheduling |
+| Phase status               | in-progress                   |
+| Last completed task        | Phase 5 done (4 live posts verified) |
+| Next action                | 6.1 Worker poll loop with FOR UPDATE SKIP LOCKED |
+| Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
 ---
@@ -29,8 +28,8 @@
 | 2   | Design system integration              | done        | 2026-10-07 |                                                    |
 | 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
 | 4   | Mastodon integration                   | done        | 2026-10-07 | Verify API docs before starting                    |
-| 5   | Bluesky integration                    | in-progress |           | **Before:** confirm auth approach; verify API docs |
-| 6   | Worker and scheduling                  | not-started |           |                                                    |
+| 5   | Bluesky integration                    | done        | 2026-10-07 | **Before:** confirm auth approach; verify API docs |
+| 6   | Worker and scheduling                  | in-progress |           |                                                    |
 | 7   | Composer and Smart Preview             | not-started |           |                                                    |
 | 8   | Queue, Drafts and Calendar views       | not-started |           |                                                    |
 | 9   | Hardening, Docker, docs                | not-started |           |                                                    |
@@ -229,7 +228,7 @@
 
 ## Phase 5: Bluesky integration
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Before starting:** confirm auth approach with the user (default: app password). Verify current AT Protocol / video API docs and log under "API verification notes".
 
@@ -271,11 +270,11 @@
 
 ## Phase 6: Worker and scheduling
 
-**Status:** not-started
+**Status:** in-progress
 
 **Tasks**
 
-- [ ] 6.1 Worker poll loop with `FOR UPDATE SKIP LOCKED`
+- [~] 6.1 Worker poll loop with `FOR UPDATE SKIP LOCKED`
 - [ ] 6.2 Publisher: load account + media, call adapter, update target and parent post status
 - [ ] 6.3 Retry with exponential backoff + jitter, max attempts, `Retry-After` support
 - [ ] 6.4 Stuck-job recovery
