@@ -16,7 +16,13 @@ export interface ApiConfig {
 
 export function createApp(webOrigin: string, database: Database, config: ApiConfig): Hono {
   const app = new Hono()
-  app.use('/api/*', cors({ origin: webOrigin }))
+  // WEB_ORIGIN may be a comma-separated list (the web dev server shifts to
+  // :4322 when :4321 is busy, which would otherwise fail CORS preflights).
+  const origins = webOrigin
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin !== '')
+  app.use('/api/*', cors({ origin: origins }))
   app.get('/api/health', (c) => c.json({ ok: true }))
   app.route('/api/posts', postsRoutes(database))
   app.route('/api/settings', settingsRoutes(database))

@@ -416,6 +416,7 @@ Append only. Anything that differs from `PLAN.md`, or where this file was correc
 | 2026-10-07 | 2 | Removed Phase-1 `DemoIsland` + `demo.ts` store when `queue.astro` moved to `AppLayout` | Superseded placeholder; keeps tree free of dead code |
 | 2026-10-07 | 4 | `env.ts` loads repo-root `.env` explicitly (`../../.env`, `../.env`, `.env`) | `pnpm --filter server` runs with cwd=apps/server so `dotenv/config` never saw the root `.env`; dev encryption key was unreadable |
 | 2026-10-07 | 4 | Root `.env` created from `.env.example` with a fresh `gen:key` (git-ignored) | Dev API needs a 32-byte key; first generated key was rotated after accidental display in tool output |
+| 2026-10-07 | 4 | `WEB_ORIGIN` supports comma-separated origins; local `.env` allows `:4321,:4322` | API's CORS rejected the web app when Astro shifted to :4322 (blog occupies :4321): preflight 204 without ACAO header |
 
 ---
 

@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { createDb } from '../db/client.js'
 import { accounts } from '../db/schema.js'
 import { accountsRoutes, oauthRoutes } from './accounts.js'
+import { createApp } from './index.js'
 
 const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? 'postgresql://scheduler:scheduler@127.0.0.1:5432/scheduler_test'
@@ -91,6 +92,29 @@ async function start(instanceUrl: string): Promise<{ status: number; body: unkno
   return { status: response.status, body: await response.json().catch(() => null) }
 }
 
+describe('cors', () => {
+  it('answers preflights for every configured web origin', async () => {
+    const corsApp = createApp('http://localhost:4321,http://localhost:4322', db, {
+      storageDir: '',
+      maxUploadMB: 25,
+      encryptionKey: ENCRYPTION_KEY,
+      apiOrigin: 'http://localhost:4000',
+      webOrigin: 'http://localhost:4321',
+    })
+    for (const origin of ['http://localhost:4321', 'http://localhost:4322']) {
+      const preflight = await corsApp.request('/api/accounts/mastodon/start', {
+        method: 'OPTIONS',
+        headers: { Origin: origin, 'Access-Control-Request-Method': 'POST' },
+      })
+      expect(preflight.headers.get('access-control-allow-origin')).toBe(origin)
+    }
+    const denied = await corsApp.request('/api/accounts/mastodon/start', {
+      method: 'OPTIONS',
+      headers: { Origin: 'http://evil.example', 'Access-Control-Request-Method': 'POST' },
+    })
+    expect(denied.headers.get('access-control-allow-origin')).toBeNull()
+  })
+})
 describe('mastodon connect flow', () => {
   it('starts OAuth with a cached app registration', async () => {
     stubInstance()
