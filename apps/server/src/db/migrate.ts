@@ -13,7 +13,11 @@ export async function runMigrations(databaseUrl: string): Promise<void> {
   const pool = new Pool({ connectionString: databaseUrl })
   try {
     const db = drizzle(pool)
-    await migrate(db, { migrationsFolder: path.join(here, '..', '..', 'drizzle') })
+    // In Docker the migrations live at MIGRATIONS_DIR (the bundled layout
+    // differs from the source layout); locally they sit next to the source.
+    await migrate(db, {
+      migrationsFolder: process.env.MIGRATIONS_DIR ?? path.join(here, '..', '..', 'drizzle'),
+    })
   } finally {
     await pool.end()
   }
