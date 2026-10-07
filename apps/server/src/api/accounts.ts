@@ -4,6 +4,7 @@ import {
   mastodonConnectStartSchema,
   platformLimitsSchema,
   BLUESKY_LIMITS,
+  DEFAULT_MASTODON_LIMITS,
   blueskyConnectSchema,
   type Account,
 } from '@social-scheduler/shared'
@@ -14,6 +15,13 @@ import { accounts, mastodonApps } from '../db/schema.js'
 import { BlueskyAdapter } from '../platforms/bluesky/adapter.js'
 import { connect as connectBluesky, normalizeHandle } from '../platforms/bluesky/client.js'
 import { MastodonAdapter } from '../platforms/mastodon/adapter.js'
+import {
+  MockPlatformAdapter,
+  isMockMode,
+  mockAuthorizeUrl,
+  mockBlueskyProfile,
+  mockMastodonAccount,
+} from '../platforms/mock.js'
 import {
   authorizeUrl,
   exchangeCode,
@@ -77,6 +85,7 @@ async function getOrRegisterApp(
   instanceUrl: string,
   config: AccountsConfig,
 ): Promise<{ clientId: string; clientSecret: string }> {
+  if (isMockMode()) return { clientId: 'mock-client', clientSecret: 'mock-secret' }
   const [cached] = await db.select().from(mastodonApps).where(eq(mastodonApps.instanceUrl, instanceUrl))
   if (cached !== undefined) {
     return { clientId: cached.clientId, clientSecret: decrypt(cached.clientSecretEncrypted, config.encryptionKey) }
@@ -156,9 +165,11 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
         requestOrigin !== undefined && origins.includes(requestOrigin)
           ? `${instanceUrl}|${requestOrigin}`
           : instanceUrl
-      const response = {
-        authorizeUrl: authorizeUrl(instanceUrl, app.clientId, config.apiOrigin, state),
-      }
+      const response = isMockMode()
+        ? { authorizeUrl: mockAuthorizeUrl(config.apiOrigin, state) }
+        : {
+            authorizeUrl: authorizeUrl(instanceUrl, app.clientId, config.apiOrigin, state),
+          }
       const checked = mastodonConnectStartResponseSchema.parse(response)
       return c.json(checked)
     } catch (err) {
@@ -184,10 +195,26 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
       ...(parsed.data.service === undefined ? {} : { service: parsed.data.service }),
     }
     try {
-      const agent = await connectBluesky(credentials)
-      const did = agent.session?.did
-      if (did === undefined) return error(c, 'Bluesky login returned no session', 502)
-      const profile = await agent.getProfile({ actor: did })
+      let did: string
+      let displayName: string
+      let remoteHandle: string
+      let avatarUrl: string | null
+      if (isMockMode()) {
+        const profile = mockBlueskyProfile(handle)
+        did = profile.did
+        displayName = profile.displayName
+        remoteHandle = profile.handle
+        avatarUrl = null
+      } else {
+        const agent = await connectBluesky(credentials)
+        const sessionDid = agent.session?.did
+        if (sessionDid === undefined) return error(c, 'Bluesky login returned no session', 502)
+        const profile = await agent.getProfile({ actor: sessionDid })
+        did = sessionDid
+        displayName = profile.data.displayName ?? profile.data.handle
+        remoteHandle = profile.data.handle
+        avatarUrl = profile.data.avatar ?? null
+      }
       const credentialsEncrypted = encrypt(JSON.stringify(credentials), config.encryptionKey)
       const [existing] = await db
         .select()
@@ -198,9 +225,9 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
           .insert(accounts)
           .values({
             platform: 'bluesky',
-            displayName: profile.data.displayName ?? profile.data.handle,
-            handle: `@${profile.data.handle}`,
-            avatarUrl: profile.data.avatar ?? null,
+            displayName,
+            handle: `@${remoteHandle}`,
+            avatarUrl,
             did,
             credentialsEncrypted,
             limitsJson: BLUESKY_LIMITS,
@@ -212,9 +239,9 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
       const [updated] = await db
         .update(accounts)
         .set({
-          displayName: profile.data.displayName ?? profile.data.handle,
-          handle: `@${profile.data.handle}`,
-          avatarUrl: profile.data.avatar ?? null,
+          displayName,
+          handle: `@${remoteHandle}`,
+          avatarUrl,
           credentialsEncrypted,
           limitsJson: BLUESKY_LIMITS,
           status: 'active',
@@ -241,6 +268,14 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
   routes.post('/:id/refresh', async (c) => {
     const [row] = await db.select().from(accounts).where(eq(accounts.id, c.req.param('id')))
     if (row === undefined) return error(c, 'Account not found', 404)
+    if (isMockMode()) {
+      const [updated] = await db
+        .update(accounts)
+        .set({ status: 'active', updatedAt: new Date() })
+        .where(eq(accounts.id, row.id))
+        .returning()
+      return c.json(toAccountDto(updated))
+    }
     if (row.platform === 'bluesky') return refreshBluesky(c, db, config, row)
     if (row.platform !== 'mastodon') return error(c, 'Only Mastodon accounts support refresh', 400)
     try {
@@ -300,16 +335,30 @@ export function oauthRoutes(db: Database, config: AccountsConfig): Hono {
       return fail('Invalid instance in state')
     }
     try {
-      const app = await getOrRegisterApp(db, instanceUrl, config)
-      const accessToken = await exchangeCode(instanceUrl, app, code, config.apiOrigin)
-      const resolved: ResolvedAccount = {
-        id: '',
-        platform: 'mastodon',
-        instanceUrl,
-        credentials: { accessToken },
+      let accessToken: string
+      let profile: { remoteId: string; displayName: string; handle: string; avatarUrl: string | null }
+      let limits: typeof DEFAULT_MASTODON_LIMITS
+      if (isMockMode() && code === 'mock-code') {
+        accessToken = 'mock-token'
+        profile = {
+          remoteId: mockMastodonAccount.id,
+          displayName: mockMastodonAccount.display_name,
+          handle: `@${mockMastodonAccount.acct}@${new URL(instanceUrl).hostname}`,
+          avatarUrl: null,
+        }
+        limits = DEFAULT_MASTODON_LIMITS
+      } else {
+        const app = await getOrRegisterApp(db, instanceUrl, config)
+        accessToken = await exchangeCode(instanceUrl, app, code, config.apiOrigin)
+        const resolved: ResolvedAccount = {
+          id: '',
+          platform: 'mastodon',
+          instanceUrl,
+          credentials: { accessToken },
+        }
+        profile = await adapter.verifyCredentials(resolved)
+        limits = await adapter.getLimits(resolved)
       }
-      const profile = await adapter.verifyCredentials(resolved)
-      const limits = await adapter.getLimits(resolved)
       const credentialsEncrypted = encrypt(JSON.stringify({ accessToken }), config.encryptionKey)
       const [existing] = await db
         .select()

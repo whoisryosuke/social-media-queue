@@ -401,14 +401,15 @@
 
 **Tasks**
 
-- [ ] 9.1 User-facing messages for all failure modes (re-auth, rate limit, media rejected)
+- [x] 9.1 User-facing messages for all failure modes (re-auth, rate limit, media rejected)
+  - Note: re-auth → `needs_reauth` badges + disabled picker chips + refresh action; rate limits → worker honors `Retry-After`, card shows attempt/error + Retry; media rejected → 415/422 messages via toast + composer blockers; publish failures → per-target errors on cards. Structured pino logs added to API (`method/path/status/ms`) alongside the worker's logs.
 - [x] 9.2 Dockerfiles (server multi-stage, web) and full `docker-compose.yml` (db, api, worker, web)
   - Note: `pnpm install`/`deploy` in images use `--ignore-scripts` (workspace `prepare` = panda codegen assumes a dev checkout); builds generate explicitly. tsup bundles server entries (`dist/api/serve.js`, `dist/worker/run.js`).
 - [x] 9.3 Verify containers restart and worker resumes
   - Note: `docker compose up -d` full stack healthy (api/worker/web + healthchecks); `restart worker api` → both back, worker polling. Localhost port conflicts to watch: host blog on :4321 answers IPv6 `localhost` — verify containers via `127.0.0.1`.
 - [~] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
 - [ ] 9.3 Verify containers restart and worker resumes
-- [ ] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
+- [x] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
 - [ ] 9.5 README: prerequisites, setup, run modes, backups, troubleshooting, adding an adapter
 
 **Acceptance criteria**

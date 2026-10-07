@@ -9,6 +9,8 @@
     "preview": "astro preview --port 4321",
     "prepare": "panda codegen",
     "test": "vitest run --passWithNoTests",
+    "test:e2e": "playwright test",
+    "test:e2e:mock": "playwright test -c playwright.mock.config.ts",
     "lint": "eslint src"
   },
   "dependencies": {

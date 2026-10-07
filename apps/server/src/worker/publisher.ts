@@ -8,6 +8,7 @@ import { readSettings } from '../api/settings.js'
 import { accounts, media, postMedia, postTargets, posts } from '../db/schema.js'
 import { BlueskyAdapter } from '../platforms/bluesky/adapter.js'
 import { MastodonAdapter } from '../platforms/mastodon/adapter.js'
+import { MockPlatformAdapter, isMockMode } from '../platforms/mock.js'
 import { nextRkey } from '../platforms/bluesky/client.js'
 import { PlatformError, type PlatformAdapter, type PublishMedia, type ResolvedAccount } from '../platforms/types.js'
 
@@ -33,6 +34,9 @@ export const DEFAULT_WORKER_OPTIONS: WorkerOptions = {
 export type AdapterMap = Record<'mastodon' | 'bluesky', PlatformAdapter>
 
 export function createAdapters(): AdapterMap {
+  if (isMockMode()) {
+    return { mastodon: new MockPlatformAdapter('mastodon'), bluesky: new MockPlatformAdapter('bluesky') }
+  }
   return { mastodon: new MastodonAdapter(), bluesky: new BlueskyAdapter() }
 }
 
