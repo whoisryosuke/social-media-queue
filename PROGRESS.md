@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 3: Database, shared schemas, API skeleton |
+| Active phase               | Phase 4: Mastodon integration |
 | Phase status               | in-progress                   |
-| Last completed task        | 2.5 Placeholder routes |
-| Next action                | 3.1 Drizzle schema + migrations |
+| Last completed task        | 3.8 Media upload endpoint |
+| Next action                | Verify Mastodon API docs, then 4.1 adapter interface |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -26,8 +26,8 @@
 | --- | -------------------------------------- | ----------- | --------- | -------------------------------------------------- |
 | 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
 | 2   | Design system integration              | done        | 2026-10-07 |                                                    |
-| 3   | Database, shared schemas, API skeleton | in-progress |           |                                                    |
-| 4   | Mastodon integration                   | not-started |           | Verify API docs before starting                    |
+| 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
+| 4   | Mastodon integration                   | in-progress |           | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | not-started |           | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | not-started |           |                                                    |
 | 7   | Composer and Smart Preview             | not-started |           |                                                    |
