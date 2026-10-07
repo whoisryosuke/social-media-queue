@@ -12,10 +12,11 @@
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
 | Active phase               | Phase 5: Bluesky integration |
-| Phase status               | in-progress                   |
-| Last completed task        | Phase 4 done (live text/image/video verified) |
-| Next action                | Verify AT Protocol docs, then 5.1 session handling |
-| Blocker / pending question | none                          |
+| Phase status               | blocked                   |
+| Last completed task        | 5.7 Accounts page UI |
+| Next action                | User connects Bluesky via /accounts; then live publish tests |
+| Blocker / pending question | Need user's Bluesky handle connected (app password entered by user in UI only) + approval for live test posts |
+| Last updated               | 2026-10-07                |
 | Last updated               | 2026-10-07                |
 
 ---
@@ -240,7 +241,7 @@
 - [x] 5.4 Video upload: upload limits, service auth, upload, job polling, embed with alt text
 - [x] 5.5 Validation: max 4 images, no image + video mix, 300 grapheme limit
 - [x] 5.6 Idempotent retry strategy (deterministic `rkey` per target)
-- [~] 5.7 Accounts page UI: "Connect Bluesky" with app password help link
+- [x] 5.7 Accounts page UI: "Connect Bluesky" with app password help link
 - [x] 5.8 Unit tests with mocks (happy paths, error classification)
 - [ ] 5.2 Rich text facets (links, mentions, hashtags)
 - [ ] 5.3 Image upload with `sharp` compression to the blob size limit (originals untouched), alt text
