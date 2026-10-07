@@ -190,20 +190,20 @@
 
 ## Phase 4: Mastodon integration
 
-**Status:** not-started
+**Status:** in-progress
 
 **Before starting:** verify current Mastodon API docs and log under "API verification notes".
 
 **Tasks**
 
-- [ ] 4.1 Adapter interface in `apps/server/src/platforms/types.ts` (if not already present)
-- [ ] 4.2 OAuth connect flow (app registration cached per instance, authorize, callback, verify credentials)
-- [ ] 4.3 Limits fetch from `/api/v2/instance`, cached in `limits_json`
-- [ ] 4.4 Media upload with async processing polling
-- [ ] 4.5 Publish with `Idempotency-Key`
-- [ ] 4.6 Error classification (retryable vs permanent; auth failure sets `needs_reauth`)
+- [x] 4.1 Adapter interface in `apps/server/src/platforms/types.ts` (if not already present)
+- [~] 4.2 OAuth connect flow (app registration cached per instance, authorize, callback, verify credentials)
+- [x] 4.3 Limits fetch from `/api/v2/instance`, cached in `limits_json`
+- [x] 4.4 Media upload with async processing polling
+- [x] 4.5 Publish with `Idempotency-Key`
+- [x] 4.6 Error classification (retryable vs permanent; auth failure sets `needs_reauth`)
 - [ ] 4.7 Accounts page UI: "Connect Mastodon"
-- [ ] 4.8 Unit tests with mocked `fetch` (success, 429, 5xx, 422, async media 202 then ready)
+- [x] 4.8 Unit tests with mocked `fetch` (success, 429, 5xx, 422, async media 202 then ready)
 
 **Acceptance criteria**
 
@@ -421,7 +421,7 @@ Append only. Record what was checked against current official docs and any diffe
 
 | Date | Platform | Docs checked | Finding |
 | ---- | -------- | ------------ | ------- |
-|      | Mastodon |              |         |
+| 2026-10-07 | Mastodon | methods/apps, methods/media, methods/statuses (docs last updated 2026-05-01) | All match PLAN: `POST /api/v1/apps` (client_name, redirect_uris array, scopes; returns client_id/secret; 4.4 adds client_secret_expires_at); `POST /api/v2/media` multipart (200 sync / 202 async, poll `GET /api/v1/media/:id`, 206 = processing); `POST /api/v1/statuses` (status + media_ids[], `Idempotency-Key` header stored up to 1 hour). No design change needed. |
 |      | Bluesky  |              |         |
 
 ---
