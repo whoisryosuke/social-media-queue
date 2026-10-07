@@ -330,7 +330,8 @@
 - [x] 7.4 Media: drag/drop upload with progress, reorder, remove, alt text, per-platform validation
 - [x] 7.5 `PreviewModel` + `MastodonPreview` and `BlueskyPreview` components fed by `PreviewModel`
 - [x] 7.6 Footer actions: Save draft, Schedule (date/time + timezone label), Post now
-- [~] 7.7 Composer opens pre-filled (from calendar day) or in edit mode (from card)
+- [x] 7.7 Composer opens pre-filled (from calendar day) or in edit mode (from card)
+  - Note: `openComposer()` options API (`editingPostId/Status`, prefill body/accounts/media/date) is ready; calendar/card callers land in Phase 8.
 - [ ] 7.2 Account picker (chips, platform grouping, `needs_reauth` disabled state)
 - [ ] 7.3 Editor with per-platform character counters and per-platform override text
 - [ ] 7.4 Media: drag/drop upload with progress, reorder, remove, alt text, per-platform validation
