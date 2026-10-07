@@ -1,0 +1,36 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+build/
+apps/web/.astro/
+apps/web/dist/
+apps/server/dist/
+packages/*/dist/
+
+# panda
+styled-system/
+
+# env / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# runtime data
+storage/
+!.gitkeep
+
+# db
+pgdata/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+*.log

@@ -14,7 +14,7 @@
 | Active phase               | Phase 1: Scaffold and tooling |
 | Phase status               | in-progress                   |
 | Last completed task        | none                          |
-| Next action                | Phase 1, task 1.2: gitattributes/gitignore/env |
+| Next action                | Phase 1, task 1.3: packages/shared |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                    |
 
@@ -44,7 +44,7 @@
 
 - [x] 1.1 Initialize pnpm workspace, TypeScript base config, ESLint/Prettier
   - Note: dropped `.npmrc` (`use-node-version=22` rejected by pnpm 8; env runs Node 24).
-- [ ] 1.2 Add `.gitattributes` (`* text=auto eol=lf`), `.gitignore`, `.env.example`
+- [x] 1.2 Add `.gitattributes` (`* text=auto eol=lf`), `.gitignore`, `.env.example`
 - [ ] 1.3 Create `packages/shared`
 - [ ] 1.4 Create `apps/server` (Hono hello-world + zod-validated env)
 - [ ] 1.5 Create `apps/web` (Astro + React + Node adapter + Panda CSS configured)
