@@ -142,7 +142,8 @@
 - [x] 3.2 Migration runner on API start
   - Note: verified API boots (migrations no-op on migrated DB) + `/api/health` OK.
 - [ ] 3.2 Migration runner on API start
-- [ ] 3.3 `packages/shared`: zod schemas/DTOs, platform limit constants
+- [x] 3.3 `packages/shared`: zod schemas/DTOs, platform limit constants
+- [~] 3.4 Post-status derivation function + unit tests
 - [ ] 3.4 Post-status derivation function + unit tests
 - [ ] 3.5 Grapheme-aware character counting utilities (Mastodon URL = 23)
 - [ ] 3.6 Token encryption module (AES-256-GCM) + tests (round-trip, tamper detection)

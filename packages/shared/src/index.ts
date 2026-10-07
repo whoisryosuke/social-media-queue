@@ -1,3 +1,7 @@
-// Shared DTOs, zod schemas and platform constants.
-// Full schemas land in Phase 3; this placeholder proves the workspace wiring.
-export const SHARED_PLACEHOLDER = 'shared' as const
+// Shared DTOs, zod schemas and platform constants for the Social Scheduler.
+export * from './accounts.js'
+export * from './enums.js'
+export * from './limits.js'
+export * from './media.js'
+export * from './posts.js'
+export * from './settings.js'
