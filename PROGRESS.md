@@ -274,7 +274,17 @@
 
 **Tasks**
 
-- [~] 6.1 Worker poll loop with `FOR UPDATE SKIP LOCKED`
+- [x] 6.1 Worker poll loop with `FOR UPDATE SKIP LOCKED`
+- [x] 6.2 Publisher: load account + media, call adapter, update target and parent post status
+- [x] 6.3 Retry with exponential backoff + jitter, max attempts, `Retry-After` support
+- [x] 6.4 Stuck-job recovery
+- [x] 6.5 `late_publish_grace_minutes` setting
+- [x] 6.6 Concurrency limits and per-account serialization
+- [x] 6.7 Graceful shutdown on SIGTERM
+- [x] 6.8 Endpoints wired: `schedule`, `unschedule`, `publish-now`, `retry`, reschedule via PATCH
+  - Note: endpoints were built in Phase 3; verified present (`posts.ts`: schedule/unschedule/publish-now/retry/PATCH).
+- [x] 6.9 Integration tests against real Postgres with a fake adapter
+  - Note: 12 worker tests (exactly-once, no double-processing, backoff-then-fail, Retry-After, stuck recovery, grace window, per-account serialization, rkey reuse, needs_reauth, orphan drop). Test accounts use properly encrypted credential envelopes.
 - [ ] 6.2 Publisher: load account + media, call adapter, update target and parent post status
 - [ ] 6.3 Retry with exponential backoff + jitter, max attempts, `Retry-After` support
 - [ ] 6.4 Stuck-job recovery
