@@ -48,8 +48,9 @@
 - [x] 1.3 Create `packages/shared`
 - [x] 1.4 Create `apps/server` (Hono hello-world + zod-validated env)
 - [x] 1.5 Create `apps/web` (Astro + React + Node adapter + Panda CSS configured)
-- [ ] 1.6 `docker-compose.yml` with `db` service (Postgres 16, named volume, healthcheck, localhost-bound port)
-- [ ] 1.7 Root scripts: `dev`, `build`, `lint`, `test`, `db:generate`, `db:migrate`, `gen:key`
+- [x] 1.6 `docker-compose.yml` with `db` service (Postgres 16, named volume, healthcheck, localhost-bound port)
+- [x] 1.7 Root scripts: `dev`, `build`, `lint`, `test`, `db:generate`, `db:migrate`, `gen:key`
+- [~] 1.8 Proof-of-pipeline page: React island reading a nanostore and rendering a Panda-styled element
 - [ ] 1.8 Proof-of-pipeline page: React island reading a nanostore and rendering a Panda-styled element
 
 **Acceptance criteria** (record evidence for each)
