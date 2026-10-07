@@ -1,0 +1,28 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "panda codegen && astro build",
+    "preview": "astro preview --port 4321",
+    "prepare": "panda codegen",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.3",
+    "@astrojs/react": "^3.6.2",
+    "@nanostores/react": "^0.7.3",
+    "astro": "^4.16.6",
+    "nanostores": "^0.11.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^0.53.4",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.3"
+  }
+}
