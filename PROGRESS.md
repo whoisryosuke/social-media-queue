@@ -325,7 +325,12 @@
 
 - [x] 7.1 Stores: `$accounts`, `$posts` (+ derived), `$composer`, `$preview`, `$toasts`, with action functions
   - Note: nanostores 0.11 removed `action()` — mutations are plain exported functions. `payload()` only sends non-empty overrides for platforms with the override toggle on, and skips still-uploading media.
-- [~] 7.2 Account picker (chips, platform grouping, `needs_reauth` disabled state)
+- [x] 7.2 Account picker (chips, platform grouping, `needs_reauth` disabled state)
+- [x] 7.3 Editor with per-platform character counters and per-platform override text
+- [x] 7.4 Media: drag/drop upload with progress, reorder, remove, alt text, per-platform validation
+- [x] 7.5 `PreviewModel` + `MastodonPreview` and `BlueskyPreview` components fed by `PreviewModel`
+- [x] 7.6 Footer actions: Save draft, Schedule (date/time + timezone label), Post now
+- [~] 7.7 Composer opens pre-filled (from calendar day) or in edit mode (from card)
 - [ ] 7.2 Account picker (chips, platform grouping, `needs_reauth` disabled state)
 - [ ] 7.3 Editor with per-platform character counters and per-platform override text
 - [ ] 7.4 Media: drag/drop upload with progress, reorder, remove, alt text, per-platform validation

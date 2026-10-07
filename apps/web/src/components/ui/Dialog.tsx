@@ -53,6 +53,8 @@ export interface DialogProps {
   children: ReactNode
   /** 'center' = modal dialog, 'right' = drawer. */
   placement?: 'center' | 'right'
+  /** Extra class for the content box (e.g. wider drawers). */
+  contentClassName?: string
 }
 
 export function Dialog({
@@ -62,13 +64,14 @@ export function Dialog({
   description,
   children,
   placement = 'center',
+  contentClassName = '',
 }: DialogProps): JSX.Element {
   const right = placement === 'right'
   return (
     <ArkDialog.Root open={open} onOpenChange={(details) => onOpenChange(details.open)}>
       <ArkDialog.Backdrop className={backdropStyle} />
       <ArkDialog.Positioner className={right ? positionerRight : positionerCenter}>
-        <ArkDialog.Content className={`${panelStyle} ${right ? contentRight : contentCenter}`}>
+        <ArkDialog.Content className={`${panelStyle} ${right ? contentRight : contentCenter} ${contentClassName}`}>
           <div className={headerStyle}>
             <div>
               <ArkDialog.Title className={titleStyle}>{title}</ArkDialog.Title>

@@ -1,13 +1,9 @@
 import Button from './ui/Button'
-import { pushToast } from '../stores/toasts'
+import { openComposer } from '../stores/composer'
 
 export default function NewPostButton(): JSX.Element {
   return (
-    <Button
-      variant="default"
-      colorPalette="blue"
-      onClick={() => pushToast('Composer arrives in Phase 7', 'info')}
-    >
+    <Button variant="default" colorPalette="blue" onClick={() => openComposer()}>
       New post
     </Button>
   )

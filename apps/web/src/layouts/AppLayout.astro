@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions'
 import '../index.css'
 import { css } from '../../styled-system/css'
 import NewPostButton from '../components/NewPostButton'
+import ComposerDrawer from '../components/composer/ComposerDrawer'
 import ToastRegion from '../components/ui/Toast'
 
 export type PrimaryTab = 'queue' | 'calendar' | 'drafts'
@@ -89,5 +90,6 @@ const main = css({ px: '4', py: '4', maxWidth: '8xl', marginInline: 'auto' })
       <slot />
     </main>
     <ToastRegion client:only="react" transition:persist="toasts" />
+    <ComposerDrawer client:only="react" transition:persist="composer" />
   </body>
 </html>
