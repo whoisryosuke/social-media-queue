@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { createApp } from './index.js'
 import { runMigrations } from '../db/migrate.js'

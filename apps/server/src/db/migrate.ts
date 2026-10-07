@@ -1,6 +1,5 @@
 // Runs pending Drizzle migrations. Called on API start (task 3.2 wiring
 // happens when the API gains its DB dependency in task 3.7).
-import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import path from 'node:path'

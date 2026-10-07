@@ -12,10 +12,11 @@
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
 | Active phase               | Phase 4: Mastodon integration |
-| Phase status               | in-progress                   |
-| Last completed task        | 3.8 Media upload endpoint |
-| Next action                | Verify Mastodon API docs, then 4.1 adapter interface |
-| Blocker / pending question | none                          |
+| Phase status               | blocked                   |
+| Last completed task        | 4.7 Accounts page UI |
+| Next action                | User authorizes a real Mastodon account; then verify publish-now text/image/video |
+| Blocker / pending question | Need a real Mastodon account: authorize via /accounts, then approve publish-now tests |
+| Last updated               | 2026-10-07                |
 | Last updated               | 2026-10-07                |
 
 ---
@@ -202,7 +203,8 @@
 - [x] 4.4 Media upload with async processing polling
 - [x] 4.5 Publish with `Idempotency-Key`
 - [x] 4.6 Error classification (retryable vs permanent; auth failure sets `needs_reauth`)
-- [ ] 4.7 Accounts page UI: "Connect Mastodon"
+- [x] 4.7 Accounts page UI: "Connect Mastodon"
+  - Note: `AccountsApp` island (connect form, account list, refresh/remove) + `apps/web/src/lib/api.ts` client. Verified `/accounts` renders the island; `GET /api/accounts` → `[]`.
 - [x] 4.8 Unit tests with mocked `fetch` (success, 429, 5xx, 422, async media 202 then ready)
 
 **Acceptance criteria**
@@ -412,6 +414,8 @@ Append only. Anything that differs from `PLAN.md`, or where this file was correc
 | 2026-10-07 | 2 | Upgraded Astro 4.16 → 5.18 (with `@astrojs/node@9`, `@astrojs/react@4`) | PLAN requires `<ClientRouter />`, which does not exist in Astro 4 (there it is `<ViewTransitions />`) |
 | 2026-10-07 | 2 | Added `typescript-eslint` to root devDeps; flat config now parses TS (rules still empty) | Scaffold `eslint` could not parse TS sources at all; real rules deferred to Phase 9 |
 | 2026-10-07 | 2 | Removed Phase-1 `DemoIsland` + `demo.ts` store when `queue.astro` moved to `AppLayout` | Superseded placeholder; keeps tree free of dead code |
+| 2026-10-07 | 4 | `env.ts` loads repo-root `.env` explicitly (`../../.env`, `../.env`, `.env`) | `pnpm --filter server` runs with cwd=apps/server so `dotenv/config` never saw the root `.env`; dev encryption key was unreadable |
+| 2026-10-07 | 4 | Root `.env` created from `.env.example` with a fresh `gen:key` (git-ignored) | Dev API needs a 32-byte key; first generated key was rotated after accidental display in tool output |
 
 ---
 

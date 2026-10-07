@@ -1,11 +1,10 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
-import EmptyState from '../components/ui/EmptyState'
+import AccountsApp from '../components/AccountsApp'
+
+const connected = Astro.url.searchParams.get('connected')
+const connectError = Astro.url.searchParams.get('error')
 ---
 <AppLayout title="Accounts">
-  <h1>Accounts</h1>
-  <EmptyState
-    title="No accounts connected"
-    description="Mastodon OAuth (Phase 4) and Bluesky app-password (Phase 5) connection flows will live here."
-  />
+  <AccountsApp client:only="react" connected={connected} connectError={connectError} />
 </AppLayout>

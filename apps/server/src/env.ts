@@ -1,4 +1,12 @@
+import dotenv from 'dotenv'
 import { z } from 'zod'
+
+// `pnpm --filter server` runs with cwd=apps/server, so the repo-root .env
+// (../../.env) is not found by default. Load it explicitly; dotenv never
+// overrides already-set variables, so real env always wins.
+dotenv.config({ path: '../../.env' })
+dotenv.config({ path: '../.env' })
+dotenv.config()
 
 const envSchema = z.object({
   DATABASE_URL: z.string().default('postgresql://scheduler:scheduler@127.0.0.1:5432/scheduler'),
