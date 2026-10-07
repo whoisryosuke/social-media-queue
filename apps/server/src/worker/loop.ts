@@ -38,10 +38,10 @@ export function startWorker(deps: WorkerDeps): RunningWorker {
       log.error({ err: error }, 'worker pass failed')
     }
     if (!stopped) {
+      // NOTE: never unref this timer — it is what keeps the worker alive.
       timer = setTimeout(() => {
         inFlight = tick()
       }, pollIntervalMs)
-      timer.unref?.()
     }
   }
 

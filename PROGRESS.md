@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 6: Worker and scheduling |
+| Active phase               | Phase 7: Composer and Smart Preview |
 | Phase status               | in-progress                   |
-| Last completed task        | Phase 5 done (4 live posts verified) |
-| Next action                | 6.1 Worker poll loop with FOR UPDATE SKIP LOCKED |
+| Last completed task        | Phase 6 done (3 live worker publishes) |
+| Next action                | 7.1 Stores + actions |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -29,8 +29,8 @@
 | 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
 | 4   | Mastodon integration                   | done        | 2026-10-07 | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | done        | 2026-10-07 | **Before:** confirm auth approach; verify API docs |
-| 6   | Worker and scheduling                  | in-progress |           |                                                    |
-| 7   | Composer and Smart Preview             | not-started |           |                                                    |
+| 6   | Worker and scheduling                  | done        | 2026-10-07 |                                                    |
+| 7   | Composer and Smart Preview             | in-progress |           |                                                    |
 | 8   | Queue, Drafts and Calendar views       | not-started |           |                                                    |
 | 9   | Hardening, Docker, docs                | not-started |           |                                                    |
 
@@ -270,7 +270,7 @@
 
 ## Phase 6: Worker and scheduling
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Tasks**
 
@@ -296,17 +296,24 @@
 
 **Acceptance criteria**
 
-- [ ] Post scheduled ~1 minute out with the browser closed is published by the worker
-- [ ] Killing/restarting the worker mid-flight does not lose or duplicate posts (Mastodon)
-- [ ] Tests: published exactly once, no double-processing by two workers, backoff then fail, stuck recovery
+- [x] Post scheduled ~1 minute out with the browser closed is published by the worker
+- [x] Killing/restarting the worker mid-flight does not lose or duplicate posts (Mastodon)
+- [x] Tests: published exactly once, no double-processing by two workers, backoff then fail, stuck recovery
 
 **Evidence:**
 
-- _(none yet)_
+- Live test 1 (scheduled 75s out, worker running): claimed 1 → published 1 → https://mastodon.social/@aries710/117401987536726260, 2026-10-07
+- Live test 2 (loop-tick check after unref fix): https://mastodon.social/@aries710/117401998904924638, 2026-10-07
+- Live test 3 (worker stopped past due, row set `publishing` + 30-min-old lock to simulate mid-flight kill, worker restarted): `recovered:1, claimed:1, published:1`, attempts stayed 1, single remoteId https://mastodon.social/@aries710/117402008230255652, 2026-10-07
+- `pnpm --filter server test` → 67 pass (12 worker tests); `pnpm lint` exit 0, 2026-10-07
 
 **Handoff notes:**
 
-- _(none yet)_
+- Worker entrypoints: `start:worker` (tsx watch) / `start:worker:prod` (dist). Poll 12s, batch 10, concurrency 3, stuck timeout 10min, max 5 attempts, backoffs 30s/2m/10m/1h + jitter.
+- Real bug found live: `timer.unref?.()` in the loop let the process exit (non-watch) / never tick — removed, never unref the loop timer.
+- Claim rows come back `snake_case` from raw SQL — `toTargetRow` maps to camelCase; keep this mapping if the claim query changes.
+- Test accounts use real encrypted credential envelopes (`encrypt()` in test setup); plaintext `{}` fails closed as unreadable.
+- API logging with pino deferred to Phase 9 (worker logs structured already).
 
 ---
 
