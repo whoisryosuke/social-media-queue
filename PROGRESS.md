@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 8: Queue, Drafts and Calendar views |
+| Active phase               | Phase 9: Hardening, Docker, docs |
 | Phase status               | in-progress                   |
-| Last completed task        | Phase 7 done (e2e composer proof) |
-| Next action                | 8.1 PostList/PostCard + 8.2 Queue page |
+| Last completed task        | Phase 8 done (e2e calendar proof) |
+| Next action                | 9.2 Dockerfiles + full compose |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -31,8 +31,8 @@
 | 5   | Bluesky integration                    | done        | 2026-10-07 | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | done        | 2026-10-07 |                                                    |
 | 7   | Composer and Smart Preview             | done        | 2026-10-07 |                                                    |
-| 8   | Queue, Drafts and Calendar views       | in-progress |           |                                                    |
-| 9   | Hardening, Docker, docs                | not-started |           |                                                    |
+| 8   | Queue, Drafts and Calendar views       | done        | 2026-10-07 |                                                    |
+| 9   | Hardening, Docker, docs                | in-progress |           |                                                    |
 
 ---
 
@@ -319,7 +319,7 @@
 
 ## Phase 7: Composer and Smart Preview
 
-**Status:** not-started
+**Status:** done (2026-10-07)
 
 **Tasks**
 
@@ -332,12 +332,6 @@
 - [x] 7.6 Footer actions: Save draft, Schedule (date/time + timezone label), Post now
 - [x] 7.7 Composer opens pre-filled (from calendar day) or in edit mode (from card)
   - Note: `openComposer()` options API (`editingPostId/Status`, prefill body/accounts/media/date) is ready; calendar/card callers land in Phase 8.
-- [ ] 7.2 Account picker (chips, platform grouping, `needs_reauth` disabled state)
-- [ ] 7.3 Editor with per-platform character counters and per-platform override text
-- [ ] 7.4 Media: drag/drop upload with progress, reorder, remove, alt text, per-platform validation
-- [ ] 7.5 `PreviewModel` + `MastodonPreview` and `BlueskyPreview` components
-- [ ] 7.6 Footer actions: Save draft, Schedule (date/time + timezone label), Post now
-- [ ] 7.7 Composer opens pre-filled (from calendar day) or in edit mode (from card)
 
 **Acceptance criteria**
 
@@ -363,29 +357,37 @@
 
 ## Phase 8: Queue, Drafts and Calendar views
 
-**Status:** not-started
+**Status:** done (2026-10-07)
 
 **Tasks**
 
 - [x] 8.1 Shared `PostList` / `PostCard` components
 - [x] 8.2 Queue page (chronological, day groups, failed/partial on top with Retry)
 - [x] 8.3 Drafts page (same layout, draft-specific actions)
-- [ ] 8.2 Queue page (chronological, day groups, failed/partial on top with Retry)
-- [ ] 8.3 Drafts page (same layout, draft-specific actions)
-- [~] 8.4 Calendar month view with dnd-kit reschedule (optimistic update + rollback)
-- [ ] 8.5 Calendar week view
-- [ ] 8.6 Click-to-create, overflow popovers, past-time drop targets disabled, keyboard-accessible drag
-- [ ] 8.7 Auto-refresh (interval + window focus)
+- [x] 8.4 Calendar month view with dnd-kit reschedule (optimistic update + rollback)
+- [x] 8.5 Calendar week view
+- [x] 8.6 Click-to-create, overflow popovers, past-time drop targets disabled, keyboard-accessible drag
+- [x] 8.7 Auto-refresh (interval + window focus)
 
 **Acceptance criteria**
 
-- [ ] All three tabs match the spec
-- [ ] Dragging a chip persistently changes scheduled time and the worker honors it
-- [ ] Drafts can be promoted to scheduled; scheduled posts can be moved back to drafts
+- [x] All three tabs match the spec
+- [x] Dragging a chip persistently changes scheduled time and the worker honors it
+- [x] Drafts can be promoted to scheduled; scheduled posts can be moved back to drafts
 
-**Evidence:**
+**Evidence (2026-10-07):**
 
-- _(none yet)_
+- Playwright `e2e/calendar.spec.ts` passes: stepped mouse drag month chip → `Rescheduled to` toast + API confirms new date; week view shows the chip; empty-slot click opens composer prefilled (`slotDay`T10:00); seed deleted after.
+- `e2e/views.spec.ts` passes: draft visible in Drafts; queue empty state. Draft→scheduled→unschedule→delete data path verified live via API in Phase 7 (composer flow test).
+- Queue groups (Today/Tomorrow/date, Needs-attention first), cards (snippet, thumbs, per-target status, errors + Retry, Edit/Duplicate/Delete/Post-now/Move-to-drafts), auto-refresh 30s + window focus in all three views.
+- Worker honors new times (polls `next_attempt_at`; PATCH updates it) — proven by Phase 6 live tests.
+- `pnpm test` → 87 pass (15 shared + 5 web + 67 server); `pnpm lint` + `pnpm build` exit 0.
+
+**Handoff notes:**
+
+- `$calendarPosts` shows `scheduled`/`publishing` only (published posts must not linger on the calendar).
+- e2e runs serially (`workers: 1`) — specs share the dev DB. Vitest scoped to `src/**/*.test.ts` so Playwright specs are excluded.
+- Keyboard drag works via dnd-kit `KeyboardSensor`; past cells are `aria-disabled` + droppable-disabled.
 
 **Handoff notes:**
 
@@ -395,12 +397,12 @@
 
 ## Phase 9: Hardening, Docker, docs
 
-**Status:** not-started
+**Status:** in-progress
 
 **Tasks**
 
 - [ ] 9.1 User-facing messages for all failure modes (re-auth, rate limit, media rejected)
-- [ ] 9.2 Dockerfiles (server multi-stage, web) and full `docker-compose.yml` (db, api, worker, web)
+- [~] 9.2 Dockerfiles (server multi-stage, web) and full `docker-compose.yml` (db, api, worker, web)
 - [ ] 9.3 Verify containers restart and worker resumes
 - [ ] 9.4 Playwright smoke tests (connect with mocked adapters, compose, schedule, calendar drag)
 - [ ] 9.5 README: prerequisites, setup, run modes, backups, troubleshooting, adding an adapter

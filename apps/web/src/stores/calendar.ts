@@ -37,11 +37,12 @@ export function goToday(): void {
   $calendarRange.set({ ...$calendarRange.get(), cursor: todayKey() })
 }
 
-/** Scheduled posts (worker-relevant), ascending. */
+/** Posts on the calendar: scheduled (or currently publishing) with a date. */
 export const $calendarPosts = computed($posts, (posts) =>
   posts
-    .filter((post): post is Post & { scheduledAt: Date | string } => post.scheduledAt !== null)
-    .sort(
-      (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
-    ),
+    .filter(
+      (post): post is Post & { scheduledAt: Date | string } =>
+        post.scheduledAt !== null && (post.status === 'scheduled' || post.status === 'publishing'),
+    )
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()),
 );
