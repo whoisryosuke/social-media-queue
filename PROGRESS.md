@@ -11,11 +11,11 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 4: Mastodon integration |
+| Active phase               | Phase 5: Bluesky integration |
 | Phase status               | blocked                   |
-| Last completed task        | 4.7 Accounts page UI |
-| Next action                | User authorizes a real Mastodon account; then verify publish-now text/image/video |
-| Blocker / pending question | Need a real Mastodon account: authorize via /accounts, then approve publish-now tests |
+| Last completed task        | Phase 4 done (live text/image/video verified) |
+| Next action                | User confirms Bluesky auth approach (default: app password) |
+| Blocker / pending question | STOP POINT 2: app-password auth vs OAuth for Bluesky |
 | Last updated               | 2026-10-07                |
 | Last updated               | 2026-10-07                |
 
@@ -28,8 +28,8 @@
 | 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
 | 2   | Design system integration              | done        | 2026-10-07 |                                                    |
 | 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
-| 4   | Mastodon integration                   | blocked     |           | Verify API docs before starting                    |
-| 5   | Bluesky integration                    | not-started |           | **Before:** confirm auth approach; verify API docs |
+| 4   | Mastodon integration                   | done        | 2026-10-07 | Verify API docs before starting                    |
+| 5   | Bluesky integration                    | blocked     |           | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | not-started |           |                                                    |
 | 7   | Composer and Smart Preview             | not-started |           |                                                    |
 | 8   | Queue, Drafts and Calendar views       | not-started |           |                                                    |
@@ -191,7 +191,7 @@
 
 ## Phase 4: Mastodon integration
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Before starting:** verify current Mastodon API docs and log under "API verification notes".
 
@@ -222,7 +222,8 @@
 
 **Handoff notes:**
 
-- _(none yet)_
+- Mastodon flow is end-to-end live: OAuth connect (cached per-instance app, `state` carries originating host), limits cached in `limits_json`, media 202-polling, `Idempotency-Key` publish, error classification with `needs_reauth` on 401/403.
+- Test account `@aries710@mastodon.social` stays connected for Phase 6 worker tests.
 
 ---
 
@@ -388,7 +389,7 @@ Log each stop point when reached and when resolved. Append only.
 | #   | Stop point                                       | Reached | Resolved | User's answer |
 | --- | ------------------------------------------------ | ------- | -------- | ------------- |
 | 1   | Panda CSS preset requested (end of Phase 1)      | 2026-10-07 | 2026-10-07 | User added `apps/web/src/theme` ("daw-preset") and wired `panda.config.ts` |
-| 2   | Bluesky auth approach confirmed (before Phase 5) |         |          |               |
+| 2   | Bluesky auth approach confirmed (before Phase 5) | 2026-10-07 |          |               |
 
 ---
 
