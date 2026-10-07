@@ -108,3 +108,10 @@ export async function unschedulePost(id: string): Promise<void> {
 export async function refreshPostsAction(): Promise<void> {
   await refreshPosts()
 }
+
+/** Optimistic local scheduled-time update (calendar drag); server sync follows. */
+export function updatePostScheduledAtLocal(postId: string, scheduledAt: string): void {
+  $posts.set(
+    $posts.get().map((post) => (post.id === postId ? { ...post, scheduledAt: new Date(scheduledAt) } : post)),
+  )
+}

@@ -372,7 +372,7 @@
 - [x] 8.3 Drafts page (same layout, draft-specific actions)
 - [ ] 8.2 Queue page (chronological, day groups, failed/partial on top with Retry)
 - [ ] 8.3 Drafts page (same layout, draft-specific actions)
-- [ ] 8.4 Calendar month view with dnd-kit reschedule (optimistic update + rollback)
+- [~] 8.4 Calendar month view with dnd-kit reschedule (optimistic update + rollback)
 - [ ] 8.5 Calendar week view
 - [ ] 8.6 Click-to-create, overflow popovers, past-time drop targets disabled, keyboard-accessible drag
 - [ ] 8.7 Auto-refresh (interval + window focus)
