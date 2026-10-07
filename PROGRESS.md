@@ -46,7 +46,7 @@
   - Note: dropped `.npmrc` (`use-node-version=22` rejected by pnpm 8; env runs Node 24).
 - [x] 1.2 Add `.gitattributes` (`* text=auto eol=lf`), `.gitignore`, `.env.example`
 - [x] 1.3 Create `packages/shared`
-- [~] 1.4 Create `apps/server` (Hono hello-world + zod-validated env)
+- [x] 1.4 Create `apps/server` (Hono hello-world + zod-validated env)
 - [ ] 1.5 Create `apps/web` (Astro + React + Node adapter + Panda CSS configured)
 - [ ] 1.6 `docker-compose.yml` with `db` service (Postgres 16, named volume, healthcheck, localhost-bound port)
 - [ ] 1.7 Root scripts: `dev`, `build`, `lint`, `test`, `db:generate`, `db:migrate`, `gen:key`
