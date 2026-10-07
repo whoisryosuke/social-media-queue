@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@pandacss/dev": "^0.53.4",
+    "@pandacss/types": "0.53.7",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "typescript": "^5.6.2",

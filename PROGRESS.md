@@ -11,11 +11,11 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 2: Design system integration (awaiting preset) |
-| Phase status               | blocked                   |
-| Last completed task        | 1.8 Proof-of-pipeline page |
-| Next action                | User provides custom Panda CSS preset (stop point 1) |
-| Blocker / pending question | STOP POINT 1: custom Panda CSS preset needed before Phase 2 |
+| Active phase               | Phase 2: Design system integration |
+| Phase status               | in-progress                   |
+| Last completed task        | 2.1 Panda preset integrated + regenerated |
+| Next action                | 2.2 Write docs/design-system-notes.md |
+| Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
 ---
@@ -25,7 +25,7 @@
 | #   | Phase                                  | Status      | Completed | Stop point after/before                            |
 | --- | -------------------------------------- | ----------- | --------- | -------------------------------------------------- |
 | 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
-| 2   | Design system integration              | not-started |           |                                                    |
+| 2   | Design system integration              | in-progress |           |                                                    |
 | 3   | Database, shared schemas, API skeleton | not-started |           |                                                    |
 | 4   | Mastodon integration                   | not-started |           | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | not-started |           | **Before:** confirm auth approach; verify API docs |
@@ -81,12 +81,13 @@
 
 ## Phase 2: Design system integration
 
-**Status:** not-started
+**Status:** in-progress
 
 **Tasks**
 
-- [ ] 2.1 Add user's Panda preset to `panda.config.ts`, regenerate `styled-system`
-- [ ] 2.2 Write `docs/design-system-notes.md` (tokens, semantic tokens, recipes, patterns, conditions)
+- [x] 2.1 Add user's Panda preset to `panda.config.ts`, regenerate `styled-system`
+  - Note: preset provided by user at `apps/web/src/theme` ("daw-preset"), wired as `presets: [preset]` (replaces base preset). Compat fixes by agent: `bgLinear` → `bgGradient` (renamed in Panda 0.53) in `button.recipe.ts` + `panel.style.ts`; added explicit `: Preset`/`: Tokens` annotations (TS2742 under pnpm isolation); added `@pandacss/types@0.53.7` dev dep. Verified: `panda codegen` + `tsc` + `eslint` + `astro build` all pass.
+- [~] 2.2 Write `docs/design-system-notes.md` (tokens, semantic tokens, recipes, patterns, conditions)
 - [ ] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
 - [ ] 2.4 `AppLayout.astro`: header, tab bar (Queue | Calendar | Drafts), "New post" button, persisted toast region, `<ClientRouter />`
 - [ ] 2.5 Placeholder routes: `/queue`, `/calendar`, `/drafts`, `/accounts`, `/settings`
@@ -332,7 +333,7 @@ Log each stop point when reached and when resolved. Append only.
 
 | #   | Stop point                                       | Reached | Resolved | User's answer |
 | --- | ------------------------------------------------ | ------- | -------- | ------------- |
-| 1   | Panda CSS preset requested (end of Phase 1)      | 2026-10-07 |          |               |
+| 1   | Panda CSS preset requested (end of Phase 1)      | 2026-10-07 | 2026-10-07 | User added `apps/web/src/theme` ("daw-preset") and wired `panda.config.ts` |
 | 2   | Bluesky auth approach confirmed (before Phase 5) |         |          |               |
 
 ---
@@ -344,6 +345,7 @@ Append only. Include user answers and any technical choices not dictated by `PLA
 | Date       | Decision                                  | Reason / source                    |
 | ---------- | ----------------------------------------- | ---------------------------------- |
 | YYYY-MM-DD | _(example)_ Bluesky v1 uses app passwords | PLAN assumption; confirmed by user |
+| 2026-10-07 | Panda preset = user's "daw-preset" at `apps/web/src/theme`, sole entry in `panda.config.ts presets` | Stop point 1 answer; provided by user |
 
 ---
 
