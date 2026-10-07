@@ -1,4 +1,4 @@
-# Phase 1: database only. api/worker/web services arrive in Phase 9.
+# Local-first Social Scheduler. Ports are bound to localhost only.
 services:
   db:
     image: postgres:16
@@ -16,6 +16,58 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@db:5432/scheduler
+      STORAGE_DIR: /app/storage
+      MIGRATIONS_DIR: /app/drizzle
+    ports:
+      - '127.0.0.1:4000:4000'
+    volumes:
+      - ./storage:/app/storage
+    command: ['node', 'dist/api/serve.js']
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://scheduler:scheduler@db:5432/scheduler
+      STORAGE_DIR: /app/storage
+      MIGRATIONS_DIR: /app/drizzle
+    volumes:
+      - ./storage:/app/storage
+    command: ['node', 'dist/worker/run.js']
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        PUBLIC_API_URL: http://localhost:4000
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '127.0.0.1:4321:4321'
+    environment:
+      PORT: '4321'
 
 volumes:
   pgdata:
