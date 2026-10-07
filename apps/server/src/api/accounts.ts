@@ -3,12 +3,16 @@ import {
   mastodonConnectStartResponseSchema,
   mastodonConnectStartSchema,
   platformLimitsSchema,
+  BLUESKY_LIMITS,
+  blueskyConnectSchema,
   type Account,
 } from '@social-scheduler/shared'
 import { and, eq } from 'drizzle-orm'
 import { decrypt, encrypt } from '../crypto.js'
 import type { Database } from '../db/client.js'
 import { accounts, mastodonApps } from '../db/schema.js'
+import { BlueskyAdapter } from '../platforms/bluesky/adapter.js'
+import { connect as connectBluesky, normalizeHandle } from '../platforms/bluesky/client.js'
 import { MastodonAdapter } from '../platforms/mastodon/adapter.js'
 import {
   authorizeUrl,
@@ -89,6 +93,41 @@ async function getOrRegisterApp(
   return app
 }
 
+async function refreshBluesky(
+  c: Context,
+  db: Database,
+  config: AccountsConfig,
+  row: typeof accounts.$inferSelect,
+): Promise<Response> {
+  const adapter = new BlueskyAdapter()
+  try {
+    const profile = await adapter.verifyCredentials(resolveAccount(row, config.encryptionKey))
+    const [updated] = await db
+      .update(accounts)
+      .set({
+        displayName: profile.displayName,
+        handle: profile.handle,
+        avatarUrl: profile.avatarUrl,
+        limitsJson: BLUESKY_LIMITS,
+        status: 'active',
+        updatedAt: new Date(),
+      })
+      .where(eq(accounts.id, row.id))
+      .returning()
+    return c.json(toAccountDto(updated))
+  } catch (err) {
+    if (err instanceof PlatformError && err.kind === 'auth') {
+      const [updated] = await db
+        .update(accounts)
+        .set({ status: 'needs_reauth', updatedAt: new Date() })
+        .where(eq(accounts.id, row.id))
+        .returning()
+      return c.json(toAccountDto(updated))
+    }
+    return error(c, (err as Error).message, 502)
+  }
+}
+
 export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
   const routes = new Hono()
   const adapter = new MastodonAdapter()
@@ -130,6 +169,68 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
     }
   })
 
+  routes.post('/bluesky', async (c) => {
+    const parsed = blueskyConnectSchema.safeParse(await c.req.json().catch(() => null))
+    if (!parsed.success) return error(c, parsed.error.message)
+    let handle: string
+    try {
+      handle = normalizeHandle(parsed.data.handle)
+    } catch (err) {
+      return error(c, (err as Error).message)
+    }
+    const credentials = {
+      handle,
+      appPassword: parsed.data.appPassword,
+      ...(parsed.data.service === undefined ? {} : { service: parsed.data.service }),
+    }
+    try {
+      const agent = await connectBluesky(credentials)
+      const did = agent.session?.did
+      if (did === undefined) return error(c, 'Bluesky login returned no session', 502)
+      const profile = await agent.getProfile({ actor: did })
+      const credentialsEncrypted = encrypt(JSON.stringify(credentials), config.encryptionKey)
+      const [existing] = await db
+        .select()
+        .from(accounts)
+        .where(and(eq(accounts.platform, 'bluesky'), eq(accounts.did, did)))
+      if (existing === undefined) {
+        const [created] = await db
+          .insert(accounts)
+          .values({
+            platform: 'bluesky',
+            displayName: profile.data.displayName ?? profile.data.handle,
+            handle: `@${profile.data.handle}`,
+            avatarUrl: profile.data.avatar ?? null,
+            did,
+            credentialsEncrypted,
+            limitsJson: BLUESKY_LIMITS,
+            status: 'active',
+          })
+          .returning()
+        return c.json(toAccountDto(created), 201)
+      }
+      const [updated] = await db
+        .update(accounts)
+        .set({
+          displayName: profile.data.displayName ?? profile.data.handle,
+          handle: `@${profile.data.handle}`,
+          avatarUrl: profile.data.avatar ?? null,
+          credentialsEncrypted,
+          limitsJson: BLUESKY_LIMITS,
+          status: 'active',
+          updatedAt: new Date(),
+        })
+        .where(eq(accounts.id, existing.id))
+        .returning()
+      return c.json(toAccountDto(updated))
+    } catch (err) {
+      if (err instanceof PlatformError && err.kind === 'auth') {
+        return error(c, 'Bluesky login failed: check the handle and app password', 401)
+      }
+      return error(c, (err as Error).message, 502)
+    }
+  })
+
   routes.delete('/:id', async (c) => {
     const [row] = await db.select({ id: accounts.id }).from(accounts).where(eq(accounts.id, c.req.param('id')))
     if (row === undefined) return error(c, 'Account not found', 404)
@@ -140,6 +241,7 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
   routes.post('/:id/refresh', async (c) => {
     const [row] = await db.select().from(accounts).where(eq(accounts.id, c.req.param('id')))
     if (row === undefined) return error(c, 'Account not found', 404)
+    if (row.platform === 'bluesky') return refreshBluesky(c, db, config, row)
     if (row.platform !== 'mastodon') return error(c, 'Only Mastodon accounts support refresh', 400)
     try {
       const resolved = resolveAccount(row, config.encryptionKey)

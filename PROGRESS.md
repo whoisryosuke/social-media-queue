@@ -12,11 +12,10 @@
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
 | Active phase               | Phase 5: Bluesky integration |
-| Phase status               | blocked                   |
+| Phase status               | in-progress                   |
 | Last completed task        | Phase 4 done (live text/image/video verified) |
-| Next action                | User confirms Bluesky auth approach (default: app password) |
-| Blocker / pending question | STOP POINT 2: app-password auth vs OAuth for Bluesky |
-| Last updated               | 2026-10-07                |
+| Next action                | Verify AT Protocol docs, then 5.1 session handling |
+| Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
 ---
@@ -29,7 +28,7 @@
 | 2   | Design system integration              | done        | 2026-10-07 |                                                    |
 | 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
 | 4   | Mastodon integration                   | done        | 2026-10-07 | Verify API docs before starting                    |
-| 5   | Bluesky integration                    | blocked     |           | **Before:** confirm auth approach; verify API docs |
+| 5   | Bluesky integration                    | in-progress |           | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | not-started |           |                                                    |
 | 7   | Composer and Smart Preview             | not-started |           |                                                    |
 | 8   | Queue, Drafts and Calendar views       | not-started |           |                                                    |
@@ -229,13 +228,20 @@
 
 ## Phase 5: Bluesky integration
 
-**Status:** not-started
+**Status:** in-progress
 
 **Before starting:** confirm auth approach with the user (default: app password). Verify current AT Protocol / video API docs and log under "API verification notes".
 
 **Tasks**
 
-- [ ] 5.1 Session handling with `@atproto/api` (app password, optional custom PDS host)
+- [x] 5.1 Session handling with `@atproto/api` (app password, optional custom PDS host)
+- [x] 5.2 Rich text facets (links, mentions, hashtags)
+- [x] 5.3 Image upload with `sharp` compression to the blob size limit (originals untouched), alt text
+- [x] 5.4 Video upload: upload limits, service auth, upload, job polling, embed with alt text
+- [x] 5.5 Validation: max 4 images, no image + video mix, 300 grapheme limit
+- [x] 5.6 Idempotent retry strategy (deterministic `rkey` per target)
+- [~] 5.7 Accounts page UI: "Connect Bluesky" with app password help link
+- [x] 5.8 Unit tests with mocks (happy paths, error classification)
 - [ ] 5.2 Rich text facets (links, mentions, hashtags)
 - [ ] 5.3 Image upload with `sharp` compression to the blob size limit (originals untouched), alt text
 - [ ] 5.4 Video upload: upload limits, service auth, upload, job polling, embed with alt text
@@ -389,7 +395,7 @@ Log each stop point when reached and when resolved. Append only.
 | #   | Stop point                                       | Reached | Resolved | User's answer |
 | --- | ------------------------------------------------ | ------- | -------- | ------------- |
 | 1   | Panda CSS preset requested (end of Phase 1)      | 2026-10-07 | 2026-10-07 | User added `apps/web/src/theme` ("daw-preset") and wired `panda.config.ts` |
-| 2   | Bluesky auth approach confirmed (before Phase 5) | 2026-10-07 |          |               |
+| 2   | Bluesky auth approach confirmed (before Phase 5) | 2026-10-07 | 2026-10-07 | App password (PLAN default) |
 
 ---
 
@@ -402,6 +408,7 @@ Append only. Include user answers and any technical choices not dictated by `PLA
 | YYYY-MM-DD | _(example)_ Bluesky v1 uses app passwords | PLAN assumption; confirmed by user |
 | 2026-10-07 | Panda preset = user's "daw-preset" at `apps/web/src/theme`, sole entry in `panda.config.ts presets` | Stop point 1 answer; provided by user |
 | 2026-10-07 | Headless UI = Ark UI (`@ark-ui/react`) for Dialog/Tabs/Avatar | PLAN's first suggestion; pairs with Panda, supports React 18 |
+| 2026-10-07 | Bluesky v1 uses app passwords | Stop point 2 answer; confirmed by user |
 
 ---
 
@@ -431,7 +438,7 @@ Append only. Record what was checked against current official docs and any diffe
 | Date | Platform | Docs checked | Finding |
 | ---- | -------- | ------------ | ------- |
 | 2026-10-07 | Mastodon | methods/apps, methods/media, methods/statuses (docs last updated 2026-05-01) | All match PLAN: `POST /api/v1/apps` (client_name, redirect_uris array, scopes; returns client_id/secret; 4.4 adds client_secret_expires_at); `POST /api/v2/media` multipart (200 sync / 202 async, poll `GET /api/v1/media/:id`, 206 = processing); `POST /api/v1/statuses` (status + media_ids[], `Idempotency-Key` header stored up to 1 hour). No design change needed. |
-|      | Bluesky  |              |         |
+| 2026-10-07 | Bluesky | docs.bsky.app video tutorial + video lexicons + rate limits (checked 2026-10-07) | Flow matches PLAN with refinements: `getServiceAuth` aud `did:web:<pds host>`, lxm `com.atproto.repo.uploadBlob`, exp +30min; upload to `video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=&name=`; poll `getJobStatus` until blob present (also handle `already_exists` → reuse blob); gate on `getUploadLimits.canUpload`; email verification required for video on bsky-hosted accounts; PDS blob cap 50MB. Publish via `putRecord` with deterministic rkey (target id) for idempotent retries. |
 
 ---
 
