@@ -25,6 +25,20 @@ export interface AccountsConfig {
   webOrigin: string
 }
 
+/** Split a comma-separated origin list (see `createApp`). */
+export function parseWebOrigins(webOrigin: string): string[] {
+  return webOrigin
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin !== '')
+}
+
+/** Redirect base: the origin the flow started from, else the first configured. */
+function redirectBase(origins: string[], candidate: string | null): string {
+  if (candidate !== null && origins.includes(candidate)) return candidate
+  return origins[0] ?? 'http://localhost:4321'
+}
+
 function error(c: Context, message: string, status = 400): Response {
   return c.json({ error: message }, status as 400)
 }
@@ -78,6 +92,7 @@ async function getOrRegisterApp(
 export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
   const routes = new Hono()
   const adapter = new MastodonAdapter()
+  const origins = parseWebOrigins(config.webOrigin)
 
   routes.get('/', async (c) => {
     const rows = await db.select().from(accounts)
@@ -95,8 +110,15 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
     }
     try {
       const app = await getOrRegisterApp(db, instanceUrl, config)
+      // Remember which web origin started the flow so the callback can
+      // redirect back to it (the raw list is not a valid redirect base).
+      const requestOrigin = c.req.header('Origin')
+      const state =
+        requestOrigin !== undefined && origins.includes(requestOrigin)
+          ? `${instanceUrl}|${requestOrigin}`
+          : instanceUrl
       const response = {
-        authorizeUrl: authorizeUrl(instanceUrl, app.clientId, config.apiOrigin, instanceUrl),
+        authorizeUrl: authorizeUrl(instanceUrl, app.clientId, config.apiOrigin, state),
       }
       const checked = mastodonConnectStartResponseSchema.parse(response)
       return c.json(checked)
@@ -156,16 +178,22 @@ export function accountsRoutes(db: Database, config: AccountsConfig): Hono {
 export function oauthRoutes(db: Database, config: AccountsConfig): Hono {
   const routes = new Hono()
   const adapter = new MastodonAdapter()
+  const origins = parseWebOrigins(config.webOrigin)
 
   routes.get('/mastodon/callback', async (c) => {
     const code = c.req.query('code')
     const state = c.req.query('state')
+    // State is `<instanceUrl>` or `<instanceUrl>|<webOrigin>` (see start).
+    const [instancePart, originPart] = (state ?? '').split('|')
+    const base = redirectBase(origins, originPart ?? null)
     const fail = (message: string): Response =>
-      c.redirect(`${config.webOrigin}/accounts?error=${encodeURIComponent(message)}`)
-    if (typeof code !== 'string' || typeof state !== 'string') return fail('Missing code or state')
+      c.redirect(`${base}/accounts?error=${encodeURIComponent(message)}`)
+    if (typeof code !== 'string' || typeof instancePart !== 'string' || instancePart === '') {
+      return fail('Missing code or state')
+    }
     let instanceUrl: string
     try {
-      instanceUrl = normalizeInstanceUrl(state)
+      instanceUrl = normalizeInstanceUrl(instancePart)
     } catch {
       return fail('Invalid instance in state')
     }
@@ -215,7 +243,7 @@ export function oauthRoutes(db: Database, config: AccountsConfig): Hono {
           })
           .where(eq(accounts.id, existing.id))
       }
-      return c.redirect(`${config.webOrigin}/accounts?connected=mastodon`)
+      return c.redirect(`${base}/accounts?connected=mastodon`)
     } catch (err) {
       return fail(err instanceof PlatformError ? err.message : 'Connection failed')
     }

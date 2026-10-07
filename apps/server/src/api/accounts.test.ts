@@ -18,7 +18,7 @@ const db = createDb(pool)
 const config = {
   encryptionKey: ENCRYPTION_KEY,
   apiOrigin: 'http://localhost:4000',
-  webOrigin: 'http://localhost:4321',
+  webOrigin: 'http://localhost:4321,http://localhost:4322',
 }
 
 const app = new Hono()
@@ -129,6 +129,17 @@ describe('mastodon connect flow', () => {
   it('rejects invalid instance URLs', async () => {
     const { status } = await start('http://insecure.example')
     expect(status).toBe(400)
+  })
+
+  it('redirects failures to the originating web host, never the raw list', async () => {
+    const bad = await app.request(
+      '/oauth/mastodon/callback?code=x&state=http://insecure.example|http://localhost:4322',
+    )
+    expect(bad.status).toBe(302)
+    expect(bad.headers.get('location')).toMatch(/^http:\/\/localhost:4322\/accounts\?error=/)
+
+    const fallback = await app.request('/oauth/mastodon/callback?code=x&state=http://insecure.example')
+    expect(fallback.headers.get('location')).toMatch(/^http:\/\/localhost:4321\/accounts\?error=/)
   })
 
   it('completes the callback and stores the account with limits', async () => {
