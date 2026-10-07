@@ -137,7 +137,9 @@
 
 **Tasks**
 
-- [ ] 3.1 Drizzle schema + migrations for all tables in PLAN section 5
+- [x] 3.1 Drizzle schema + migrations for all tables in PLAN section 5
+  - Note: verified `db:generate` + `db:migrate` against fresh `scheduler_test` DB — all 7 tables created.
+- [~] 3.2 Migration runner on API start
 - [ ] 3.2 Migration runner on API start
 - [ ] 3.3 `packages/shared`: zod schemas/DTOs, platform limit constants
 - [ ] 3.4 Post-status derivation function + unit tests
