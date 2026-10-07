@@ -87,7 +87,8 @@
 
 - [x] 2.1 Add user's Panda preset to `panda.config.ts`, regenerate `styled-system`
   - Note: preset provided by user at `apps/web/src/theme` ("daw-preset"), wired as `presets: [preset]` (replaces base preset). Compat fixes by agent: `bgLinear` → `bgGradient` (renamed in Panda 0.53) in `button.recipe.ts` + `panel.style.ts`; added explicit `: Preset`/`: Tokens` annotations (TS2742 under pnpm isolation); added `@pandacss/types@0.53.7` dev dep. Verified: `panda codegen` + `tsc` + `eslint` + `astro build` all pass.
-- [~] 2.2 Write `docs/design-system-notes.md` (tokens, semantic tokens, recipes, patterns, conditions)
+- [x] 2.2 Write `docs/design-system-notes.md` (tokens, semantic tokens, recipes, patterns, conditions)
+- [~] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
 - [ ] 2.3 Base primitives: Button, IconButton, Input, Textarea, Select, Tabs, Card, Badge, Avatar, Dialog/Drawer, Toast, EmptyState, Spinner
 - [ ] 2.4 `AppLayout.astro`: header, tab bar (Queue | Calendar | Drafts), "New post" button, persisted toast region, `<ClientRouter />`
 - [ ] 2.5 Placeholder routes: `/queue`, `/calendar`, `/drafts`, `/accounts`, `/settings`
@@ -346,6 +347,7 @@ Append only. Include user answers and any technical choices not dictated by `PLA
 | ---------- | ----------------------------------------- | ---------------------------------- |
 | YYYY-MM-DD | _(example)_ Bluesky v1 uses app passwords | PLAN assumption; confirmed by user |
 | 2026-10-07 | Panda preset = user's "daw-preset" at `apps/web/src/theme`, sole entry in `panda.config.ts presets` | Stop point 1 answer; provided by user |
+| 2026-10-07 | Headless UI = Ark UI (`@ark-ui/react`) for Dialog/Tabs/Avatar | PLAN's first suggestion; pairs with Panda, supports React 18 |
 
 ---
 

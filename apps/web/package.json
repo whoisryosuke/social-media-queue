@@ -12,6 +12,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@ark-ui/react": "^5.39.3",
     "@astrojs/node": "^8.3.3",
     "@astrojs/react": "^3.6.2",
     "@nanostores/react": "^0.7.3",
