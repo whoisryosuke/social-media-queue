@@ -28,7 +28,7 @@
 | 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
 | 2   | Design system integration              | done        | 2026-10-07 |                                                    |
 | 3   | Database, shared schemas, API skeleton | done        | 2026-10-07 |                                                    |
-| 4   | Mastodon integration                   | in-progress |           | Verify API docs before starting                    |
+| 4   | Mastodon integration                   | blocked     |           | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | not-started |           | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | not-started |           |                                                    |
 | 7   | Composer and Smart Preview             | not-started |           |                                                    |
@@ -457,3 +457,9 @@ Newest entry last.
 - **Done:** Full Phase 1 scaffold: pnpm workspace + TS strict + ESLint/Prettier; `.gitattributes`/`.gitignore`/`.env.example`; `packages/shared` placeholder; Hono API (`/api/health`) + zod env + worker placeholder; Astro+React+Panda web with nanostore `DemoIsland` on `/queue`; compose `db` (postgres:16); `gen:key` script. 8 commits.
 - **Verified:** `docker compose up -d db` (Running); `pnpm dev` starts web+api+worker; `/api/health` → `{"ok":true}`; `/queue` → 200 with island + Panda layers; `pnpm lint/test/build` all exit 0.
 - **Next:** STOP POINT 1 — user provides custom Panda CSS preset; then Phase 2 (preset install, `docs/design-system-notes.md`, primitives, `AppLayout`).
+
+### 2026-10-07, Session 2 (Phases 2–4)
+
+- **Done:** Phase 2 (preset integration + compat fixes, design notes, 13 primitives, AppLayout, 5 routes; Astro 4→5 upgrade); Phase 3 (Drizzle schema + 7-table migration, posts/settings/media CRUD, encryption, shared schemas; 19 API tests); Phase 4 server + UI (adapter, OAuth connect flow, accounts routes + UI, 13 adapter tests + 5 connect tests).
+- **Verified:** `POST /api/accounts/mastodon/start` against live mastodon.social returned a real `authorizeUrl`; `/accounts` renders; `pnpm test` all green (52 tests).
+- **Next:** User authorizes a real Mastodon account via `/accounts`, then approve publish-now text/image/video tests to close Phase 4.
