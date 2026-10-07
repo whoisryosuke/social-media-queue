@@ -34,3 +34,7 @@ Thumbs.db
 
 # logs
 *.log
+
+# test output
+test-results/
+playwright-report/
