@@ -148,7 +148,25 @@
 - [x] 3.6 Token encryption module (AES-256-GCM) + tests (round-trip, tamper detection)
 - [x] 3.7 CRUD for posts and settings with validation and status transition rules
   - Note: per-target platform validation (`adapter.validate`) hooks in with Phase 4/5 adapters; structural + transition rules enforced now. API tests run against real Postgres (`scheduler_test`).
-- [~] 3.8 Media upload endpoint: store, extract metadata, enforce size limit, serve files
+- [x] 3.8 Media upload endpoint: store, extract metadata, enforce size limit, serve files
+  - Note: images validated + measured with `sharp`; videos checked by magic bytes (mp4 `ftyp`, webm EBML); `durationMs` stays null until ffprobe/adapter probing (Phase 4/5). Server test files run with `--fileParallelism=false` (shared test DB).
+
+**Acceptance criteria**
+
+- [x] Vitest API tests cover post lifecycle and media upload
+- [x] Migrations apply cleanly on a fresh DB
+
+**Evidence:**
+
+- `pnpm --filter server test` → 3 files, 19 tests pass (10 post lifecycle incl. schedule/unschedule/retry/publish-now/publishing-guard/delete/list-filters/settings; 5 crypto; 4 media incl. serve-back byte equality) against real Postgres `scheduler_test`, 2026-10-07
+- `db:migrate` on fresh `scheduler_test` created all 7 tables, 2026-10-07
+- `pnpm lint` exit 0; `tsc --noEmit` clean for shared + server, 2026-10-07
+
+**Handoff notes:**
+
+- API routes are `db`-injected factories (`postsRoutes`, `settingsRoutes`, `mediaRoutes`, `mediaFileRoutes`); `createApp(webOrigin, db, { storageDir, maxUploadMB })`; files served at `GET /media/:id` (non-API path).
+- `POST /api/posts` with `scheduledAt` but no `accountIds` → 400; `PATCH` on publishing → 409; removing a published target → 409; `scheduledAt: null` on non-draft via PATCH → 400 (use `unschedule`).
+- Per-target platform validation (`adapter.validate`) is NOT wired yet — hooks in with Phase 4/5 adapters.
 - [ ] 3.4 Post-status derivation function + unit tests
 - [ ] 3.5 Grapheme-aware character counting utilities (Mastodon URL = 23)
 - [ ] 3.6 Token encryption module (AES-256-GCM) + tests (round-trip, tamper detection)

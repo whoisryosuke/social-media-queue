@@ -11,7 +11,10 @@ await runMigrations(env.DATABASE_URL)
 
 serve(
   {
-    fetch: createApp(env.WEB_ORIGIN, db).fetch,
+    fetch: createApp(env.WEB_ORIGIN, db, {
+      storageDir: env.STORAGE_DIR,
+      maxUploadMB: env.MAX_UPLOAD_MB,
+    }).fetch,
     port: env.API_PORT,
   },
   (info) => {
