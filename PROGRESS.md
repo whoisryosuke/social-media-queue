@@ -11,12 +11,12 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 1: Scaffold and tooling |
-| Phase status               | in-progress                   |
-| Last completed task        | none                          |
-| Next action                | Phase 1, task 1.5: apps/web scaffold |
-| Blocker / pending question | none                          |
-| Last updated               | 2026-10-07                    |
+| Active phase               | Phase 2: Design system integration (awaiting preset) |
+| Phase status               | blocked                   |
+| Last completed task        | 1.8 Proof-of-pipeline page |
+| Next action                | User provides custom Panda CSS preset (stop point 1) |
+| Blocker / pending question | STOP POINT 1: custom Panda CSS preset needed before Phase 2 |
+| Last updated               | 2026-10-07                |
 
 ---
 
@@ -24,7 +24,7 @@
 
 | #   | Phase                                  | Status      | Completed | Stop point after/before                            |
 | --- | -------------------------------------- | ----------- | --------- | -------------------------------------------------- |
-| 1   | Scaffold and tooling                   | in-progress |           | **After:** ask user for Panda CSS preset           |
+| 1   | Scaffold and tooling                   | done        | 2026-10-07 | **After:** ask user for Panda CSS preset           |
 | 2   | Design system integration              | not-started |           |                                                    |
 | 3   | Database, shared schemas, API skeleton | not-started |           |                                                    |
 | 4   | Mastodon integration                   | not-started |           | Verify API docs before starting                    |
@@ -38,7 +38,7 @@
 
 ## Phase 1: Scaffold and tooling
 
-**Status:** in-progress
+**Status:** done (2026-10-07)
 
 **Tasks**
 
@@ -51,21 +51,29 @@
 - [x] 1.6 `docker-compose.yml` with `db` service (Postgres 16, named volume, healthcheck, localhost-bound port)
 - [x] 1.7 Root scripts: `dev`, `build`, `lint`, `test`, `db:generate`, `db:migrate`, `gen:key`
 - [~] 1.8 Proof-of-pipeline page: React island reading a nanostore and rendering a Panda-styled element
-- [ ] 1.8 Proof-of-pipeline page: React island reading a nanostore and rendering a Panda-styled element
+- [x] 1.8 Proof-of-pipeline page: React island reading a nanostore and rendering a Panda-styled element
 
 **Acceptance criteria** (record evidence for each)
 
-- [ ] `docker compose up -d db && pnpm dev` starts everything on Windows
-- [ ] `http://localhost:4321` renders the styled island
-- [ ] `GET http://localhost:4000/api/health` returns OK
+- [x] `docker compose up -d db && pnpm dev` starts everything on Windows
+- [x] `http://localhost:4321` renders the styled island
+- [x] `GET http://localhost:4000/api/health` returns OK
 
 **Evidence:**
 
-- _(none yet)_
+- `docker compose up -d db` → `social-media-queue-db-1` Running (postgres:16, healthcheck `pg_isready`), 2026-10-07
+- `pnpm dev` (concurrently) started web + api + worker in one command: worker logged `worker started (placeholder loop)`, api logged `api listening on http://localhost:4000`, web `astro ready` — 2026-10-07
+- `GET /api/health` → `{"ok":true}` via `Invoke-RestMethod`, 2026-10-07
+- `GET /queue` → 200, HTML contains `<astro-island ... DemoIsland ... client="only">` and Panda `@layer reset, base, tokens, recipes, utilities` style block (verified via `curl.exe`), 2026-10-07
+- `pnpm lint` exit 0, `pnpm test` exit 0 (passWithNoTests), `pnpm build` exit 0 (astro SSR + client built), 2026-10-07
+- Note: during verification port 4321 was occupied by the user's other project (ryosuke-astro-blog `astro dev`), so Astro served on 4322. On a clean machine the app takes 4321 as configured.
 
 **Handoff notes:**
 
-- _(none yet)_
+- Panda uses the default preset only; no custom tokens. `styled-system/` is generated (`pnpm --filter web prepare`) and git-ignored.
+- `apps/web/src/env.d.ts` is Astro-generated and committed (standard).
+- Web `astro.config.mjs`: `output: 'server'` + `@astrojs/node` standalone, port 4321. Server `start:api`/`start:worker` use `tsx watch`; `:prod` variants run compiled `dist/`.
+- `storage/` is git-ignored runtime data (no `.gitkeep` — the exception pattern did not un-ignore it, so it was removed).
 
 **Stop point:** ask the user for their custom Panda CSS preset. Do not start Phase 2 until it is provided.
 
@@ -324,7 +332,7 @@ Log each stop point when reached and when resolved. Append only.
 
 | #   | Stop point                                       | Reached | Resolved | User's answer |
 | --- | ------------------------------------------------ | ------- | -------- | ------------- |
-| 1   | Panda CSS preset requested (end of Phase 1)      |         |          |               |
+| 1   | Panda CSS preset requested (end of Phase 1)      | 2026-10-07 |          |               |
 | 2   | Bluesky auth approach confirmed (before Phase 5) |         |          |               |
 
 ---
@@ -345,7 +353,9 @@ Append only. Anything that differs from `PLAN.md`, or where this file was correc
 
 | Date | Phase | What differed | Why / resolution |
 | ---- | ----- | ------------- | ---------------- |
-|      |       |               |                  |
+| 2026-10-07 | 1 | Dropped `.npmrc` (`use-node-version=22` rejected by installed pnpm 8.9.2); env runs Node v24.14.0, not PLAN's Node 22 LTS | Avoid blocking Windows dev; revisit Node pinning in Phase 9 Docker work |
+| 2026-10-07 | 1 | `storage/.gitkeep` removed; `storage/` stays fully git-ignored | `!.gitkeep` did not un-ignore inside ignored dir; matches PLAN (storage is runtime data) |
+| 2026-10-07 | 1 | Web dev server verified on :4322 instead of :4321 | Port 4321 was occupied by the user's other project (ryosuke-astro-blog); app is configured for 4321 and takes it on a clean machine |
 
 ---
 
@@ -382,8 +392,8 @@ Hard-coded values used because the Panda preset has no matching token. Append on
 
 Newest entry last.
 
-### YYYY-MM-DD, Session 0 (template)
+### 2026-10-07, Session 1 (Phase 1 scaffold)
 
-- **Done:** _(what was completed)_
-- **Verified:** _(what was run/checked)_
-- **Next:** _(what the next session should start with)_
+- **Done:** Full Phase 1 scaffold: pnpm workspace + TS strict + ESLint/Prettier; `.gitattributes`/`.gitignore`/`.env.example`; `packages/shared` placeholder; Hono API (`/api/health`) + zod env + worker placeholder; Astro+React+Panda web with nanostore `DemoIsland` on `/queue`; compose `db` (postgres:16); `gen:key` script. 8 commits.
+- **Verified:** `docker compose up -d db` (Running); `pnpm dev` starts web+api+worker; `/api/health` → `{"ok":true}`; `/queue` → 200 with island + Panda layers; `pnpm lint/test/build` all exit 0.
+- **Next:** STOP POINT 1 — user provides custom Panda CSS preset; then Phase 2 (preset install, `docs/design-system-notes.md`, primitives, `AppLayout`).
