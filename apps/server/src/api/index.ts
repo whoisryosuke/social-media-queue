@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Database } from '../db/client.js'
+import { accountsRoutes, oauthRoutes } from './accounts.js'
 import { mediaFileRoutes, mediaRoutes } from './media.js'
 import { postsRoutes } from './posts.js'
 import { settingsRoutes } from './settings.js'
@@ -8,6 +9,9 @@ import { settingsRoutes } from './settings.js'
 export interface ApiConfig {
   storageDir: string
   maxUploadMB: number
+  encryptionKey: string
+  apiOrigin: string
+  webOrigin: string
 }
 
 export function createApp(webOrigin: string, database: Database, config: ApiConfig): Hono {
@@ -18,5 +22,7 @@ export function createApp(webOrigin: string, database: Database, config: ApiConf
   app.route('/api/settings', settingsRoutes(database))
   app.route('/api/media', mediaRoutes(database, config))
   app.route('/media', mediaFileRoutes(database))
+  app.route('/api/accounts', accountsRoutes(database, config))
+  app.route('/oauth', oauthRoutes(database, config))
   return app
 }

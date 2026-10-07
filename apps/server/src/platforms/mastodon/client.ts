@@ -124,12 +124,18 @@ export async function registerApp(
   return { clientId: data.client_id, clientSecret: data.client_secret }
 }
 
-export function authorizeUrl(instanceUrl: string, clientId: string, apiOrigin: string): string {
+export function authorizeUrl(
+  instanceUrl: string,
+  clientId: string,
+  apiOrigin: string,
+  state: string,
+): string {
   const params = new URLSearchParams({
     client_id: clientId,
     scope: MASTODON_SCOPES,
     redirect_uri: redirectUri(apiOrigin),
     response_type: 'code',
+    state,
   })
   return `${instanceUrl}/oauth/authorize?${params.toString()}`
 }

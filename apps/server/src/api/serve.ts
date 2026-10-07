@@ -14,6 +14,9 @@ serve(
     fetch: createApp(env.WEB_ORIGIN, db, {
       storageDir: env.STORAGE_DIR,
       maxUploadMB: env.MAX_UPLOAD_MB,
+      encryptionKey: env.ENCRYPTION_KEY,
+      apiOrigin: env.PUBLIC_API_URL,
+      webOrigin: env.WEB_ORIGIN,
     }).fetch,
     port: env.API_PORT,
   },

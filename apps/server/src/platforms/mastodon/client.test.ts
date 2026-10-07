@@ -57,9 +57,10 @@ describe('OAuth connect flow', () => {
   })
 
   it('builds the authorize URL and exchanges the code', async () => {
-    const url = authorizeUrl('https://mastodon.social', 'cid', 'http://localhost:4000')
+    const url = authorizeUrl('https://mastodon.social', 'cid', 'http://localhost:4000', 'https://mastodon.social')
     expect(url).toContain('https://mastodon.social/oauth/authorize?')
     expect(url).toContain('response_type=code')
+    expect(url).toContain(`state=${encodeURIComponent('https://mastodon.social')}`)
 
     stubFetch(async (url, init) => {
       expect(url).toBe('https://mastodon.social/oauth/token')
@@ -155,16 +156,16 @@ describe('media upload', () => {
 
 describe('publishStatus', () => {
   it('sends the idempotency key and media ids', async () => {
-    let seenHeaders: Headers | null = null
+    let idempotencyKey: string | null = null
     stubFetch(async (url, init) => {
       expect(url).toBe('https://mastodon.social/api/v1/statuses')
-      seenHeaders = init.headers as Headers
+      idempotencyKey = (init.headers as Headers).get('Idempotency-Key')
       expect(init.body).toBeInstanceOf(FormData)
       return jsonResponse({ id: 's1', url: 'https://mastodon.social/@a/1' })
     })
     const result = await publishStatus('https://mastodon.social', 'tok', 'hello', ['m1'], 'target-1')
     expect(result).toEqual({ remoteId: 's1', url: 'https://mastodon.social/@a/1' })
-    expect(seenHeaders?.get('Idempotency-Key')).toBe('target-1')
+    expect(idempotencyKey).toBe('target-1')
   })
 })
 

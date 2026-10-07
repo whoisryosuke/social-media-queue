@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { accountStatusSchema, platformSchema } from './enums'
+import { platformLimitsSchema } from './limits'
 
 const isoDate = z.coerce.date()
 
@@ -12,6 +13,8 @@ export const accountSchema = z.object({
   instanceUrl: z.string().nullable(),
   did: z.string().nullable(),
   status: accountStatusSchema,
+  /** Cached platform limits; null until fetched. */
+  limits: platformLimitsSchema.nullable(),
   createdAt: isoDate,
   updatedAt: isoDate,
 })

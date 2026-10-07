@@ -197,7 +197,7 @@
 **Tasks**
 
 - [x] 4.1 Adapter interface in `apps/server/src/platforms/types.ts` (if not already present)
-- [~] 4.2 OAuth connect flow (app registration cached per instance, authorize, callback, verify credentials)
+- [x] 4.2 OAuth connect flow (app registration cached per instance, authorize, callback, verify credentials)
 - [x] 4.3 Limits fetch from `/api/v2/instance`, cached in `limits_json`
 - [x] 4.4 Media upload with async processing polling
 - [x] 4.5 Publish with `Idempotency-Key`
