@@ -145,7 +145,7 @@ function scheduledLabel(iso: string | null): string {
 
 function PreviewFrame({ model, urlWeight }: { model: PreviewModel; urlWeight: number }): JSX.Element {
   return (
-    <article className={`${panelStyle} ${cardStyle}`}>
+    <article data-testid={`preview-${model.platform}`} className={`${panelStyle} ${cardStyle}`}>
       <div className={headStyle}>
         <Avatar src={model.avatarUrl} name={model.displayName} size="sm" />
         <div>

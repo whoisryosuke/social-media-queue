@@ -11,10 +11,10 @@
 
 | Field                      | Value                         |
 | -------------------------- | ----------------------------- |
-| Active phase               | Phase 7: Composer and Smart Preview |
+| Active phase               | Phase 8: Queue, Drafts and Calendar views |
 | Phase status               | in-progress                   |
-| Last completed task        | Phase 6 done (3 live worker publishes) |
-| Next action                | 7.1 Stores + actions |
+| Last completed task        | Phase 7 done (e2e composer proof) |
+| Next action                | 8.1 PostList/PostCard + 8.2 Queue page |
 | Blocker / pending question | none                          |
 | Last updated               | 2026-10-07                |
 
@@ -30,8 +30,8 @@
 | 4   | Mastodon integration                   | done        | 2026-10-07 | Verify API docs before starting                    |
 | 5   | Bluesky integration                    | done        | 2026-10-07 | **Before:** confirm auth approach; verify API docs |
 | 6   | Worker and scheduling                  | done        | 2026-10-07 |                                                    |
-| 7   | Composer and Smart Preview             | in-progress |           |                                                    |
-| 8   | Queue, Drafts and Calendar views       | not-started |           |                                                    |
+| 7   | Composer and Smart Preview             | done        | 2026-10-07 |                                                    |
+| 8   | Queue, Drafts and Calendar views       | in-progress |           |                                                    |
 | 9   | Hardening, Docker, docs                | not-started |           |                                                    |
 
 ---
@@ -341,18 +341,23 @@
 
 **Acceptance criteria**
 
-- [ ] Typing updates previews instantly
-- [ ] Selecting only Bluesky shows only the Bluesky preview and counter
-- [ ] Invalid combinations block Schedule with a clear reason
-- [ ] Full create → schedule → publish flow works from the UI
+- [x] Typing updates previews instantly
+- [x] Selecting only Bluesky shows only the Bluesky preview and counter
+- [x] Invalid combinations block Schedule with a clear reason
+- [x] Full create → schedule → publish flow works from the UI
 
-**Evidence:**
+**Evidence (2026-10-07):**
 
-- _(none yet)_
+- Playwright `e2e/composer.spec.ts` passes headless: fill text → both previews update instantly with entity highlighting; Bluesky-only → single preview + `41/300` counter; 301 chars → blocker text + Schedule/Post-now disabled; XHR upload (201) → alt field → remove → media row deleted.
+- Extended flow in the same spec: New post → pick account → date → Schedule → dialog closes → unschedule + delete via API (no live publish in tests; dev DB left clean).
+- Store unit tests (5) cover preview derivation, tightest limit, overrides, mix validation, blockers.
+- Publish path itself proven live by the Phase 6 worker tests (direct adapter + worker pickup).
 
 **Handoff notes:**
 
-- _(none yet)_
+- Playwright lives in `apps/web` (`playwright.config.ts`, `e2e/`, Chromium installed). `webServer` reuses a running API on :4000; web boots on :4333 (added to local `.env` origins). NOTE: parallel API instances fight over :4000 (EADDRINUSE) — stop stray `start:api` processes before e2e runs.
+- Preview articles carry `data-testid="preview-{platform}"`.
+- `openComposer()` prefill/edit API is ready for Phase 8 calendar/card callers.
 
 ---
 
