@@ -11,6 +11,8 @@ export function createDb(pool: Pool): ReturnType<typeof drizzle<typeof schema>> 
   return drizzle(pool, { schema })
 }
 
+export type Database = ReturnType<typeof createDb>
+
 // Default instance used by the API and worker entrypoints.
 const env = loadEnv()
 export const pool = createPool(env.DATABASE_URL)

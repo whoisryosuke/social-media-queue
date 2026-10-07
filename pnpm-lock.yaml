@@ -35,6 +35,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.2
         version: 1.19.17(hono@4.13.13)
+      '@social-scheduler/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1

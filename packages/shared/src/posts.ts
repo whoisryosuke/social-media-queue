@@ -25,11 +25,7 @@ export const postSchema = z.object({
   body: z.string(),
   scheduledAt: isoDate.nullable(),
   targets: z.array(postTargetSchema),
-  media: z.array(
-    postMediaSchema.extend({
-      mediaId: z.string().uuid(),
-    }),
-  ),
+  media: z.array(postMediaSchema),
   createdAt: isoDate,
   updatedAt: isoDate,
 })

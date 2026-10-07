@@ -146,7 +146,9 @@
 - [x] 3.4 Post-status derivation function + unit tests
 - [x] 3.5 Grapheme-aware character counting utilities (Mastodon URL = 23)
 - [x] 3.6 Token encryption module (AES-256-GCM) + tests (round-trip, tamper detection)
-- [~] 3.7 CRUD for posts and settings with validation and status transition rules
+- [x] 3.7 CRUD for posts and settings with validation and status transition rules
+  - Note: per-target platform validation (`adapter.validate`) hooks in with Phase 4/5 adapters; structural + transition rules enforced now. API tests run against real Postgres (`scheduler_test`).
+- [~] 3.8 Media upload endpoint: store, extract metadata, enforce size limit, serve files
 - [ ] 3.4 Post-status derivation function + unit tests
 - [ ] 3.5 Grapheme-aware character counting utilities (Mastodon URL = 23)
 - [ ] 3.6 Token encryption module (AES-256-GCM) + tests (round-trip, tamper detection)
