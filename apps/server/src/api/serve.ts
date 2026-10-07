@@ -1,9 +1,12 @@
 import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { createApp } from './index.js'
+import { runMigrations } from '../db/migrate.js'
 import { loadEnv } from '../env.js'
 
 const env = loadEnv()
+
+await runMigrations(env.DATABASE_URL)
 
 serve(
   {
