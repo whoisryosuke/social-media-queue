@@ -171,6 +171,29 @@ interface VideoJobStatus {
   }
 }
 
+/** Resolves the user's actual PDS host (needed as service-auth audience). */
+export async function resolvePdsHost(agent: BskyAgent): Promise<string> {
+  const did = agent.session?.did
+  if (did !== undefined && did.startsWith('did:web:')) return did.slice('did:web:'.length)
+  if (did !== undefined) {
+    try {
+      const response = await fetch(`https://plc.directory/${encodeURIComponent(did)}`)
+      if (response.ok) {
+        const doc = (await response.json()) as {
+          service?: { id: string; type: string; serviceEndpoint: string }[]
+        }
+        const pds = doc.service?.find(
+          (service) => service.id === '#atproto_pds' || service.type === 'AtprotoPersonalDataServer',
+        )
+        if (pds !== undefined) return new URL(pds.serviceEndpoint).hostname
+      }
+    } catch {
+      // Fall through to the login host.
+    }
+  }
+  return new URL(agent.service.toString()).hostname
+}
+
 /** Mints a service-auth token for one video-service method call. */
 async function videoServiceToken(agent: BskyAgent, lxm: string): Promise<string> {
   try {
@@ -241,7 +264,20 @@ export async function uploadVideo(
 
   const did = agent.session?.did
   if (did === undefined) throw new PlatformError('Bluesky session expired', 'auth')
-  const uploadToken = await videoServiceToken(agent, 'app.bsky.video.uploadVideo')
+  // Upload tokens are authorized against the user's PDS (lxm uploadBlob);
+  // limits/status tokens target the video service itself (see above).
+  const pdsHost = await resolvePdsHost(agent)
+  let uploadToken: string
+  try {
+    const response = await agent.com.atproto.server.getServiceAuth({
+      aud: `did:web:${pdsHost}`,
+      lxm: 'com.atproto.repo.uploadBlob',
+      exp: Math.floor(Date.now() / 1000) + 60 * 30,
+    })
+    uploadToken = (response.data as { token: string }).token
+  } catch (error) {
+    throw toPlatformError(error, 'Bluesky video service auth failed')
+  }
   const uploadUrl = new URL(`${VIDEO_SERVICE_URL}/xrpc/app.bsky.video.uploadVideo`)
   uploadUrl.searchParams.set('did', did)
   uploadUrl.searchParams.set('name', item.filename)
@@ -252,8 +288,24 @@ export async function uploadVideo(
       headers: { authorization: `Bearer ${uploadToken}`, 'content-type': item.mime },
       body: item.buffer as BodyInit,
     })
-    if (!response.ok) throw new Error(`upload failed: ${response.status}`)
-    job = ((await response.json()) as VideoJobStatus).jobStatus
+    if (!response.ok) {
+      const bodyText = await response.text().catch(() => '')
+      // `already_exists`: identical bytes were processed before. The error
+      // carries the original job id — poll it for the blob (see below).
+      let existing: { error?: string; jobId?: string; did?: string } | null = null
+      try {
+        existing = JSON.parse(bodyText) as { error?: string; jobId?: string; did?: string }
+      } catch {
+        existing = null
+      }
+      if (existing?.error === 'already_exists' && typeof existing.jobId === 'string') {
+        job = { jobId: existing.jobId, did: existing.did ?? did, state: 'JOB_STATE_CREATED' }
+      } else {
+        throw new Error(`upload failed: ${response.status} ${bodyText.slice(0, 300)}`)
+      }
+    } else {
+      job = ((await response.json()) as VideoJobStatus).jobStatus
+    }
   } catch (error) {
     throw toPlatformError(error, 'Bluesky video upload failed')
   }

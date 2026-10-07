@@ -253,17 +253,19 @@
 
 **Acceptance criteria**
 
-- [ ] `publish-now` of text works on a real Bluesky account
-- [ ] `publish-now` of image(s) works; oversized images are compressed under the limit
-- [ ] `publish-now` of a video works
+- [x] `publish-now` of text works on a real Bluesky account
+- [x] `publish-now` of image(s) works; oversized images are compressed under the limit
+- [x] `publish-now` of a video works
 
 **Evidence:**
 
-- _(none yet)_
+- Account `@whoisryosuke.bsky.social` connected via app password (active), 2026-10-07
+- Live publishes through `BlueskyAdapter.publish` (temp scripts, deleted after): text with link+hashtag facets → https://bsky.app/profile/whoisryosuke.bsky.social/post/3mxcv7nkrrs2s, image + alt → https://bsky.app/profile/whoisryosuke.bsky.social/post/3mxcv7rukxk2i, 3.5MB png auto-compressed → https://bsky.app/profile/whoisryosuke.bsky.social/post/3mxcv7x3ax227, video → https://bsky.app/profile/whoisryosuke.bsky.social/post/3mxcvgbkvlc2z, 2026-10-07. (Direct adapter calls — worker pickup arrives in Phase 6.)
+- `pnpm --filter server test` → 55 pass (incl. `already_exists` reuse); `pnpm lint` exit 0, 2026-10-07
 
 **Handoff notes:**
 
-- _(none yet)_
+- Test account `@whoisryosuke.bsky.social` stays connected for Phase 6 worker tests.
 
 ---
 
@@ -439,7 +441,7 @@ Append only. Record what was checked against current official docs and any diffe
 | Date | Platform | Docs checked | Finding |
 | ---- | -------- | ------------ | ------- |
 | 2026-10-07 | Mastodon | methods/apps, methods/media, methods/statuses (docs last updated 2026-05-01) | All match PLAN: `POST /api/v1/apps` (client_name, redirect_uris array, scopes; returns client_id/secret; 4.4 adds client_secret_expires_at); `POST /api/v2/media` multipart (200 sync / 202 async, poll `GET /api/v1/media/:id`, 206 = processing); `POST /api/v1/statuses` (status + media_ids[], `Idempotency-Key` header stored up to 1 hour). No design change needed. |
-| 2026-10-07 | Bluesky | docs.bsky.app video tutorial + video lexicons + rate limits (checked 2026-10-07) | Flow matches PLAN with refinements: `getServiceAuth` aud `did:web:<pds host>`, lxm `com.atproto.repo.uploadBlob`, exp +30min; upload to `video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=&name=`; poll `getJobStatus` until blob present (also handle `already_exists` → reuse blob); gate on `getUploadLimits.canUpload`; email verification required for video on bsky-hosted accounts; PDS blob cap 50MB. Publish via `putRecord` with deterministic rkey (target id) for idempotent retries. |
+| 2026-10-07 | Bluesky | docs.bsky.app video tutorial + video lexicons + rate limits (checked 2026-10-07) | Flow matches PLAN with refinements: `getServiceAuth` aud `did:web:<pds host>`, lxm `com.atproto.repo.uploadBlob`, exp +30min; upload to `video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=&name=`; poll `getJobStatus` until blob present (also handle `already_exists` → reuse blob); gate on `getUploadLimits.canUpload`; email verification required for video on bsky-hosted accounts; PDS blob cap 50MB. Publish via `putRecord` with deterministic rkey (target id) for idempotent retries. REFINED 2026-10-07: `app.bsky.feed.post` only accepts TIDs as rkeys, so idempotency = one TID per target generated once and stored in new `post_targets.rkey` column (migration 0001), reused across retries. Video service is called directly (PDS 501s): `getUploadLimits`/`getJobStatus` with aud `did:web:video.bsky.app` + per-method lxm; `uploadVideo` with aud `did:web:<real PDS host>` (resolved via plc.directory DID doc) + lxm `com.atproto.repo.uploadBlob`; 409 `already_exists` → poll the returned jobId for its blob. |
 
 ---
 

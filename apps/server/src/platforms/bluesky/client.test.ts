@@ -165,7 +165,7 @@ describe('prepareImage', () => {
 })
 
 describe('uploadVideo', () => {
-  function stubVideoService(scenario: 'ready' | 'poll-then-ready' | 'disallowed'): void {
+  function stubVideoService(scenario: 'ready' | 'poll-then-ready' | 'disallowed' | 'exists-then-ready'): void {
     let polls = 0
     vi.stubGlobal(
       'fetch',
@@ -176,9 +176,20 @@ describe('uploadVideo', () => {
             : new Response(JSON.stringify({ canUpload: true }))
         }
         if (String(url).includes('uploadVideo')) {
-          return new Response(
-            JSON.stringify({ jobStatus: { jobId: 'job1', did: 'did:plc:test', state: 'JOB_STATE_CREATED' } }),
-          )
+          return scenario === 'exists-then-ready'
+            ? new Response(
+                JSON.stringify({
+                  did: 'did:plc:test',
+                  error: 'already_exists',
+                  jobId: 'old-job',
+                  message: 'Video already processed',
+                  state: 'JOB_STATE_COMPLETED',
+                }),
+                { status: 409 },
+              )
+            : new Response(
+                JSON.stringify({ jobStatus: { jobId: 'job1', did: 'did:plc:test', state: 'JOB_STATE_CREATED' } }),
+              )
         }
         polls += 1
         if (scenario === 'ready' || polls >= 2) {
@@ -202,6 +213,18 @@ describe('uploadVideo', () => {
 
   it('uploads and polls until the blob is ready', async () => {
     stubVideoService('poll-then-ready')
+    const agent = await connect({ handle: 'alice.test', appPassword: 'x' })
+    const result = await uploadVideo(
+      agent,
+      { buffer: new Uint8Array([1, 2, 3]), mime: 'video/mp4', filename: 'v.mp4' },
+      { pollIntervalMs: 5 },
+    )
+    expect(result.blob).toMatchObject({ ref: 'videoblob' })
+    vi.unstubAllGlobals()
+  })
+
+  it('reuses the blob when the video was already processed', async () => {
+    stubVideoService('exists-then-ready')
     const agent = await connect({ handle: 'alice.test', appPassword: 'x' })
     const result = await uploadVideo(
       agent,
