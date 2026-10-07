@@ -42,6 +42,9 @@ export default function AccountsApp({
   const [accounts, setAccounts] = useState<Account[] | null>(null)
   const [instanceUrl, setInstanceUrl] = useState('')
   const [busy, setBusy] = useState(false)
+  const [bskyHandle, setBskyHandle] = useState('')
+  const [bskyPassword, setBskyPassword] = useState('')
+  const [bskyBusy, setBskyBusy] = useState(false)
 
   const refresh = useCallback(() => {
     void loadAccounts(setAccounts).catch((error: Error) => pushToast(error.message, 'error'))
@@ -69,6 +72,26 @@ export default function AccountsApp({
     } catch (error) {
       pushToast((error as Error).message, 'error')
       setBusy(false)
+    }
+  }
+
+  async function connectBluesky(event: React.FormEvent): Promise<void> {
+    event.preventDefault()
+    if (bskyHandle.trim() === '' || bskyPassword === '') return
+    setBskyBusy(true)
+    try {
+      await apiFetch('/api/accounts/bluesky', {
+        method: 'POST',
+        body: JSON.stringify({ handle: bskyHandle.trim(), appPassword: bskyPassword }),
+      })
+      setBskyHandle('')
+      setBskyPassword('')
+      pushToast('Bluesky account connected', 'success')
+      refresh()
+    } catch (error) {
+      pushToast((error as Error).message, 'error')
+    } finally {
+      setBskyBusy(false)
     }
   }
 
@@ -144,6 +167,40 @@ export default function AccountsApp({
           </label>
           <Button type="submit" disabled={busy || instanceUrl.trim() === ''}>
             {busy ? 'Connecting…' : 'Connect'}
+          </Button>
+        </form>
+      </Card>
+      <Card>
+        <h2 className={h2Style}>Connect Bluesky</h2>
+        <p className={handleStyle}>
+          Use an app password (not your main password). Create one in Bluesky under Settings → Privacy and
+          Security →{' '}
+          <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noreferrer">
+            App passwords
+          </a>
+          .
+        </p>
+        <form className={formStyle} onSubmit={(event) => void connectBluesky(event)}>
+          <label className={fieldStyle}>
+            Handle
+            <Input
+              placeholder="you.bsky.social"
+              value={bskyHandle}
+              onChange={(event) => setBskyHandle(event.target.value)}
+              autoComplete="username"
+            />
+          </label>
+          <label className={fieldStyle}>
+            App password
+            <Input
+              type="password"
+              value={bskyPassword}
+              onChange={(event) => setBskyPassword(event.target.value)}
+              autoComplete="new-password"
+            />
+          </label>
+          <Button type="submit" disabled={bskyBusy || bskyHandle.trim() === '' || bskyPassword === ''}>
+            {bskyBusy ? 'Connecting…' : 'Connect'}
           </Button>
         </form>
       </Card>
