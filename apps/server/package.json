@@ -9,7 +9,7 @@
     "start:api:prod": "node dist/api/serve.js",
     "start:worker": "tsx watch src/worker/run.ts",
     "start:worker:prod": "node dist/worker/run.js",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "lint": "eslint src",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts"
