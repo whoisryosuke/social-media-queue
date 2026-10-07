@@ -367,7 +367,9 @@
 
 **Tasks**
 
-- [ ] 8.1 Shared `PostList` / `PostCard` components
+- [x] 8.1 Shared `PostList` / `PostCard` components
+- [x] 8.2 Queue page (chronological, day groups, failed/partial on top with Retry)
+- [x] 8.3 Drafts page (same layout, draft-specific actions)
 - [ ] 8.2 Queue page (chronological, day groups, failed/partial on top with Retry)
 - [ ] 8.3 Drafts page (same layout, draft-specific actions)
 - [ ] 8.4 Calendar month view with dnd-kit reschedule (optimistic update + rollback)

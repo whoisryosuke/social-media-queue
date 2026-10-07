@@ -37,6 +37,34 @@ export async function loadPosts(): Promise<void> {
   await refreshPosts()
 }
 
+export async function duplicatePost(id: string): Promise<void> {
+  try {
+    const source = await apiFetch<Post>(`/api/posts/${id}`)
+    const bodyOverrides: Record<string, string> = {}
+    for (const target of source.targets) {
+      if (target.bodyOverride !== null && target.bodyOverride !== '') {
+        bodyOverrides[target.accountId] = target.bodyOverride
+      }
+    }
+    await apiFetch('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify({
+        body: source.body,
+        accountIds: source.targets.map((target) => target.accountId),
+        ...(Object.keys(bodyOverrides).length > 0 ? { bodyOverrides } : {}),
+        media: source.media.map((item) => ({
+          mediaId: item.mediaId,
+          ...(item.altText === null || item.altText === '' ? {} : { altText: item.altText }),
+        })),
+      }),
+    })
+    pushToast('Post duplicated as draft', 'success')
+    await refreshPosts()
+  } catch (error) {
+    pushToast((error as Error).message, 'error')
+  }
+}
+
 export async function deletePost(id: string): Promise<void> {
   try {
     await apiFetch(`/api/posts/${id}`, { method: 'DELETE' })

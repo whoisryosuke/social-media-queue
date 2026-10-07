@@ -26,17 +26,24 @@ async function getFullPost(db: Database, id: string): Promise<Post | null> {
     .from(postMedia)
     .where(eq(postMedia.postId, id))
     .orderBy(asc(postMedia.position))
+  const mediaDetails = []
+  for (const attachment of attachments) {
+    const [item] = await db.select().from(media).where(eq(media.id, attachment.mediaId))
+    mediaDetails.push({
+      mediaId: attachment.mediaId,
+      position: attachment.position,
+      altText: attachment.altText,
+      url: item === undefined ? '' : `/media/${item.id}`,
+      mime: item?.mime ?? '',
+    })
+  }
   return {
     id: post.id,
     status: post.status,
     body: post.body,
     scheduledAt: post.scheduledAt,
     targets: targets.map(toTargetDto),
-    media: attachments.map((attachment) => ({
-      mediaId: attachment.mediaId,
-      position: attachment.position,
-      altText: attachment.altText,
-    })),
+    media: mediaDetails,
     createdAt: post.createdAt,
     updatedAt: post.updatedAt,
   }

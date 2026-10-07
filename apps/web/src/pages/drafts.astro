@@ -1,8 +1,7 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
-import EmptyState from '../components/ui/EmptyState'
+import { DraftsView } from '../components/posts/QueueViews'
 ---
 <AppLayout title="Drafts" activeTab="drafts">
-  <h1>Drafts</h1>
-  <EmptyState title="No drafts" description="Unscheduled posts will live here (Phase 8)." />
+  <DraftsView client:only="react" />
 </AppLayout>

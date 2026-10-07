@@ -1,11 +1,7 @@
 ---
 import AppLayout from '../layouts/AppLayout.astro'
-import EmptyState from '../components/ui/EmptyState'
+import { QueueView } from '../components/posts/QueueViews'
 ---
 <AppLayout title="Queue" activeTab="queue">
-  <h1>Scheduled posts</h1>
-  <EmptyState
-    title="Nothing scheduled"
-    description="Scheduled posts will appear here in chronological order (Phase 8)."
-  />
+  <QueueView client:only="react" />
 </AppLayout>

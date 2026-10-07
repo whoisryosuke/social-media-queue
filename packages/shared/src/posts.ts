@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { postStatusSchema, targetStatusSchema } from './enums'
-import { postMediaSchema } from './media'
+import { postMediaDetailSchema } from './media'
 
 const isoDate = z.coerce.date()
 
@@ -26,7 +26,7 @@ export const postSchema = z.object({
   body: z.string(),
   scheduledAt: isoDate.nullable(),
   targets: z.array(postTargetSchema),
-  media: z.array(postMediaSchema),
+  media: z.array(postMediaDetailSchema),
   createdAt: isoDate,
   updatedAt: isoDate,
 })

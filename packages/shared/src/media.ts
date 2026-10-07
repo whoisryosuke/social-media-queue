@@ -23,3 +23,10 @@ export const postMediaSchema = z.object({
   altText: z.string().max(1500).nullable(),
 })
 export type PostMedia = z.infer<typeof postMediaSchema>
+
+/** Attachment detail as returned by the API (includes serving info). */
+export const postMediaDetailSchema = postMediaSchema.extend({
+  url: z.string(),
+  mime: z.string(),
+})
+export type PostMediaDetail = z.infer<typeof postMediaDetailSchema>
