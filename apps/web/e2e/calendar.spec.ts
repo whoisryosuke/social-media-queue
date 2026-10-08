@@ -42,7 +42,9 @@ test.describe('calendar', () => {
 
       const fetched = await request.get(`http://localhost:4000/api/posts/${post.id}`)
       const updated = (await fetched.json()) as { scheduledAt: string }
-      expect(new Date(updated.scheduledAt).toISOString().slice(0, 10)).toBe(targetDay)
+      const localDate = new Date(updated.scheduledAt)
+      const localKey = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`
+      expect(localKey).toBe(targetDay)
 
       // Week view shows the chip; clicking an empty future slot pre-fills the composer.
       await page.getByRole('button', { name: 'Week', exact: true }).click()

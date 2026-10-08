@@ -1,6 +1,9 @@
 ---
 import { ClientRouter } from 'astro:transitions'
 import '../index.css'
+// Generated Panda CSS (tokens, recipes, utilities). Must come after
+// index.css so the bare @layer declaration there wins the layer order.
+import '../../styled-system/styles.css'
 import { css } from '../../styled-system/css'
 import NewPostButton from '../components/NewPostButton'
 import ComposerDrawer from '../components/composer/ComposerDrawer'

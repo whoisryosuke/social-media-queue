@@ -7,6 +7,26 @@ test.describe('composer and smart preview', () => {
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
 
+    // Panda CSS must actually be applied (generated stylesheet is loaded).
+    const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+    expect(bodyBg).not.toBe('rgba(0, 0, 0, 0)')
+    // The drawer is a bounded, scrollable container (not full-viewport content).
+    const drawer = await page.evaluate(() => {
+      const content = document.querySelector('[role="dialog"]')
+      if (content === null) return null
+      const style = getComputedStyle(content)
+      return {
+        maxWidth: style.maxWidth,
+        overflowY: style.overflowY,
+        width: content.getBoundingClientRect().width,
+        viewport: window.innerWidth,
+      }
+    })
+    expect(drawer).not.toBeNull()
+    expect(drawer?.maxWidth).not.toBe('none')
+    expect(drawer?.width ?? 0).toBeLessThanOrEqual((drawer?.viewport ?? 0) + 1)
+    expect(['auto', 'scroll']).toContain(drawer?.overflowY)
+
     // Pick both accounts: two live previews appear.
     await dialog.getByRole('button', { name: /mastodon\.social/ }).first().click()
     await dialog.getByRole('button', { name: /bsky\.social/ }).first().click()

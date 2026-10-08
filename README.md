@@ -92,6 +92,7 @@ The web app needs `PUBLIC_API_URL` too: copy `apps/web/.env.example` to `apps/we
 | Post stuck `pending` | Worker not running (`pnpm --filter server start:worker`), or account `needs_reauth` (reconnect on `/accounts`). |
 | Video upload fails (Bluesky) | Account email must be verified; daily video limits apply. The server log shows the service message. |
 | `pnpm exec tsx ...` says "Command tsx not found" | Transient pnpm store contention when several pnpm processes run at once — retry. |
+| Styles look unstyled after changing a `css()` call | Dev mode doesn't regenerate `styled-system/styles.css` automatically — run `pnpm --filter web exec panda cssgen` (or restart `pnpm dev`, which runs it via `prepare`). |
 
 ## How to add a new platform adapter
 

@@ -32,7 +32,7 @@ const positionerRight = css({
 
 const contentCenter = css({ width: 'full', maxWidth: 'md', maxHeight: '90vh', overflow: 'auto' })
 
-const contentRight = css({ height: '100vh', width: 'full', maxWidth: 'md', borderRadius: '0' })
+const contentRight = css({ height: '100vh', width: 'full', maxWidth: 'md', borderRadius: '0', overflowY: 'auto' })
 
 const headerStyle = css({
   display: 'flex',

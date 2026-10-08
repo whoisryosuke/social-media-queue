@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev --port 4321",
-    "build": "panda codegen && astro build",
+    "build": "panda codegen && panda cssgen && astro build",
     "preview": "astro preview --port 4321",
-    "prepare": "panda codegen",
+    "prepare": "panda codegen && panda cssgen",
     "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:mock": "playwright test -c playwright.mock.config.ts",

@@ -12,7 +12,6 @@ const panelStyle = css({
   borderRadius: 4,
 
   color: "gray.12",
-  overflow: "hidden",
 });
 
 export default panelStyle;
